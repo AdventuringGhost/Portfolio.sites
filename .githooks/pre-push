@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+node scripts/guard-no-deploy.js
+STATUS=$?
+if [ $STATUS -ne 0 ]; then
+  echo "❌ Pre-push blocked by SAFE_MODE guard."
+  exit $STATUS
+fi
+exit 0
+
+

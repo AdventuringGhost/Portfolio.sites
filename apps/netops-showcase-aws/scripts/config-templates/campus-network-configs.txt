@@ -1,0 +1,382 @@
+# Campus Network Configuration Templates
+# Copy and paste these configurations into Packet Tracer devices
+
+# ===========================================
+# CORE LAYER CONFIGURATIONS
+# ===========================================
+
+# Core-1 Switch Configuration
+enable
+configure terminal
+hostname Core-1
+vlan 10
+ name Management
+vlan 20
+ name Faculty
+vlan 30
+ name Students
+vlan 40
+ name Guest
+vlan 50
+ name Servers
+exit
+
+# Configure trunk ports
+interface GigabitEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/5
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/6
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/7
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure access ports for servers
+interface FastEthernet 0/8
+ switchport mode access
+ switchport access vlan 50
+interface FastEthernet 0/9
+ switchport mode access
+ switchport access vlan 50
+interface FastEthernet 0/10
+ switchport mode access
+ switchport access vlan 50
+interface FastEthernet 0/11
+ switchport mode access
+ switchport access vlan 50
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50 root primary
+
+# Enable SSH
+ip domain-name campus.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+# Save configuration
+write memory
+exit
+
+# ===========================================
+# Core-2 Switch Configuration (Similar to Core-1)
+# ===========================================
+enable
+configure terminal
+hostname Core-2
+vlan 10
+ name Management
+vlan 20
+ name Faculty
+vlan 30
+ name Students
+vlan 40
+ name Guest
+vlan 50
+ name Servers
+exit
+
+# Configure trunk ports (same as Core-1)
+interface GigabitEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/5
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/6
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/7
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.2 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50 root secondary
+
+# Enable SSH
+ip domain-name campus.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# CORE ROUTER CONFIGURATION
+# ===========================================
+enable
+configure terminal
+hostname Core-Router
+
+# Configure interfaces
+interface GigabitEthernet 0/0
+ ip address 192.168.10.254 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/1
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/2
+ ip address 192.168.30.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/3
+ ip address 192.168.40.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/4
+ ip address 192.168.50.1 255.255.255.0
+ no shutdown
+
+# Configure routing
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
+
+# Configure DHCP pools
+ip dhcp pool Faculty
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ dns-server 192.168.50.11
+ip dhcp pool Students
+ network 192.168.30.0 255.255.255.0
+ default-router 192.168.30.1
+ dns-server 192.168.50.11
+ip dhcp pool Guest
+ network 192.168.40.0 255.255.255.0
+ default-router 192.168.40.1
+ dns-server 8.8.8.8
+
+# Configure NAT
+access-list 1 permit 192.168.20.0 0.0.0.255
+access-list 1 permit 192.168.30.0 0.0.0.255
+access-list 1 permit 192.168.40.0 0.0.0.255
+ip nat inside source list 1 interface GigabitEthernet 0/0 overload
+
+# Configure interfaces for NAT
+interface GigabitEthernet 0/1
+ ip nat inside
+interface GigabitEthernet 0/2
+ ip nat inside
+interface GigabitEthernet 0/3
+ ip nat inside
+interface GigabitEthernet 0/0
+ ip nat outside
+
+# Enable SSH
+ip domain-name campus.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# DISTRIBUTION SWITCH CONFIGURATION (Dist-A1)
+# ===========================================
+enable
+configure terminal
+hostname Dist-A1
+vlan 10
+ name Management
+vlan 20
+ name Faculty
+vlan 30
+ name Students
+vlan 40
+ name Guest
+vlan 50
+ name Servers
+exit
+
+# Configure trunk ports to core
+interface GigabitEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure trunk ports to access switches
+interface FastEthernet 0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface FastEthernet 0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.11 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+
+# Enable SSH
+ip domain-name campus.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# ACCESS SWITCH CONFIGURATION (Access-A1)
+# ===========================================
+enable
+configure terminal
+hostname Access-A1
+vlan 10
+ name Management
+vlan 20
+ name Faculty
+vlan 30
+ name Students
+vlan 40
+ name Guest
+vlan 50
+ name Servers
+exit
+
+# Configure trunk port to distribution
+interface FastEthernet 0/24
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure access ports for faculty PCs
+interface FastEthernet 0/1
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/2
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/3
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/4
+ switchport mode access
+ switchport access vlan 20
+
+# Configure access ports for student PCs
+interface FastEthernet 0/5
+ switchport mode access
+ switchport access vlan 30
+interface FastEthernet 0/6
+ switchport mode access
+ switchport access vlan 30
+interface FastEthernet 0/7
+ switchport mode access
+ switchport access vlan 30
+interface FastEthernet 0/8
+ switchport mode access
+ switchport access vlan 30
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.41 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+
+# Enable SSH
+ip domain-name campus.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# SERVER CONFIGURATIONS
+# ===========================================
+
+# DHCP Server Configuration
+# IP: 192.168.50.10
+# Subnet: 255.255.255.0
+# Gateway: 192.168.50.1
+# DNS: 192.168.50.11
+
+# DNS Server Configuration
+# IP: 192.168.50.11
+# Subnet: 255.255.255.0
+# Gateway: 192.168.50.1
+# DNS Records:
+# - www.campus.local -> 192.168.50.12
+# - mail.campus.local -> 192.168.50.13
+# - file.campus.local -> 192.168.50.14
+
+# Web Server Configuration
+# IP: 192.168.50.12
+# Subnet: 255.255.255.0
+# Gateway: 192.168.50.1
+
+# File Server Configuration
+# IP: 192.168.50.13
+# Subnet: 255.255.255.0
+# Gateway: 192.168.50.1
+
+# ===========================================
+# PC CONFIGURATIONS
+# ===========================================
+
+# Faculty PCs (VLAN 20)
+# PC1: 192.168.20.10, Gateway: 192.168.20.1, DNS: 192.168.50.11
+# PC2: 192.168.20.11, Gateway: 192.168.20.1, DNS: 192.168.50.11
+# PC3: 192.168.20.12, Gateway: 192.168.20.1, DNS: 192.168.50.11
+# PC4: 192.168.20.13, Gateway: 192.168.20.1, DNS: 192.168.50.11
+
+# Student PCs (VLAN 30)
+# PC5: 192.168.30.10, Gateway: 192.168.30.1, DNS: 192.168.50.11
+# PC6: 192.168.30.11, Gateway: 192.168.30.1, DNS: 192.168.50.11
+# PC7: 192.168.30.12, Gateway: 192.168.30.1, DNS: 192.168.50.11
+# PC8: 192.168.30.13, Gateway: 192.168.30.1, DNS: 192.168.50.11
+
+# Guest Laptops (VLAN 40)
+# Laptop1: 192.168.40.10, Gateway: 192.168.40.1, DNS: 8.8.8.8
+# Laptop2: 192.168.40.11, Gateway: 192.168.40.1, DNS: 8.8.8.8
+# Laptop3: 192.168.40.12, Gateway: 192.168.40.1, DNS: 8.8.8.8

@@ -1,0 +1,192 @@
+{
+  "Name": "SecurityAuditTrail",
+  "S3BucketName": "security-audit-logs-bucket",
+  "S3KeyPrefix": "cloudtrail/",
+  "IncludeGlobalServiceEvents": true,
+  "IsMultiRegionTrail": true,
+  "EnableLogFileValidation": true,
+  "EventSelectors": [
+    {
+      "ReadWriteType": "All",
+      "IncludeManagementEvents": true,
+      "DataResources": [
+        {
+          "Type": "AWS::S3::Object",
+          "Values": [
+            "arn:aws:s3:::sensitive-data-bucket/*",
+            "arn:aws:s3:::production-data-bucket/*"
+          ]
+        },
+        {
+          "Type": "AWS::S3::Bucket",
+          "Values": [
+            "arn:aws:s3:::sensitive-data-bucket",
+            "arn:aws:s3:::production-data-bucket"
+          ]
+        },
+        {
+          "Type": "AWS::RDS::DBInstance",
+          "Values": [
+            "arn:aws:rds:*:*:db:prod-*",
+            "arn:aws:rds:*:*:db:sensitive-*"
+          ]
+        },
+        {
+          "Type": "AWS::EC2::Instance",
+          "Values": [
+            "arn:aws:ec2:*:*:instance/*prod*",
+            "arn:aws:ec2:*:*:instance/*sensitive*"
+          ]
+        }
+      ],
+      "ExcludeManagementEventSources": []
+    }
+  ],
+  "InsightSelectors": [
+    {
+      "InsightType": "ApiCallRateInsight"
+    },
+    {
+      "InsightType": "ApiErrorRateInsight"
+    }
+  ],
+  "CloudWatchLogsLogGroupArn": "arn:aws:logs:us-east-1:123456789012:log-group:CloudTrail/SecurityAudit",
+  "CloudWatchLogsRoleArn": "arn:aws:iam::123456789012:role/CloudTrailCloudWatchLogsRole",
+  "KMSKeyId": "arn:aws:kms:us-east-1:123456789012:key/12345678-1234-1234-1234-123456789012",
+  "Tags": [
+    {
+      "Key": "Environment",
+      "Value": "Production"
+    },
+    {
+      "Key": "Purpose",
+      "Value": "SecurityAudit"
+    },
+    {
+      "Key": "Compliance",
+      "Value": "SOC2"
+    },
+    {
+      "Key": "Retention",
+      "Value": "7Years"
+    }
+  ],
+  "AdvancedEventSelectors": [
+    {
+      "Name": "SensitiveDataAccess",
+      "FieldSelectors": [
+        {
+          "Field": "eventCategory",
+          "Equals": [
+            "Data"
+          ]
+        },
+        {
+          "Field": "resources.type",
+          "Equals": [
+            "AWS::S3::Object"
+          ]
+        },
+        {
+          "Field": "resources.ARN",
+          "StartsWith": [
+            "arn:aws:s3:::sensitive-data-bucket/"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "IAMChanges",
+      "FieldSelectors": [
+        {
+          "Field": "eventCategory",
+          "Equals": [
+            "Management"
+          ]
+        },
+        {
+          "Field": "eventName",
+          "StartsWith": [
+            "Create",
+            "Update",
+            "Delete",
+            "Attach",
+            "Detach",
+            "Put"
+          ]
+        },
+        {
+          "Field": "resources.type",
+          "Equals": [
+            "AWS::IAM::User",
+            "AWS::IAM::Role",
+            "AWS::IAM::Policy",
+            "AWS::IAM::Group"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "NetworkSecurityChanges",
+      "FieldSelectors": [
+        {
+          "Field": "eventCategory",
+          "Equals": [
+            "Management"
+          ]
+        },
+        {
+          "Field": "eventName",
+          "StartsWith": [
+            "Create",
+            "Update",
+            "Delete",
+            "Authorize",
+            "Revoke"
+          ]
+        },
+        {
+          "Field": "resources.type",
+          "Equals": [
+            "AWS::EC2::SecurityGroup",
+            "AWS::EC2::NetworkAcl",
+            "AWS::EC2::RouteTable",
+            "AWS::EC2::VPC"
+          ]
+        }
+      ]
+    },
+    {
+      "Name": "DataEncryptionChanges",
+      "FieldSelectors": [
+        {
+          "Field": "eventCategory",
+          "Equals": [
+            "Management"
+          ]
+        },
+        {
+          "Field": "eventName",
+          "StartsWith": [
+            "Create",
+            "Update",
+            "Delete",
+            "Put",
+            "Enable",
+            "Disable"
+          ]
+        },
+        {
+          "Field": "resources.type",
+          "Equals": [
+            "AWS::KMS::Key",
+            "AWS::S3::Bucket"
+          ]
+        }
+      ]
+    }
+  ]
+}
+
+
+

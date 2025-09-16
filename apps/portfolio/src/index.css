@@ -1,0 +1,79 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+:root {
+  --custom-green: #78C841;
+  --custom-cream: #B4E50D;
+  --custom-orange: #FF9B2F;
+  --custom-burgundy: #FB4141;
+}
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 font-sans;
+    margin: 0;
+    padding: 0;
+  }
+  
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 4rem; /* Account for sticky header */
+  }
+
+  /* Ensure proper content flow */
+  #root {
+    display: block;
+    min-height: 100vh;
+    width: 100%;
+  }
+
+  /* Prevent layout shifts during image loading */
+  img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Ensure content flows from top to bottom */
+  main {
+    display: block;
+    width: 100%;
+  }
+
+  /* Prevent any flex issues */
+  .space-y-8 > * + * {
+    margin-top: 2rem;
+  }
+
+  .space-y-12 > * + * {
+    margin-top: 3rem;
+  }
+
+  /* Ensure pages start at top */
+  html, body {
+    scroll-behavior: smooth;
+  }
+
+  /* Force scroll to top on route changes */
+  .scroll-to-top {
+    scroll-behavior: auto;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-sunrise-cyan hover:bg-sunrise-orange text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .btn-secondary {
+    @apply bg-sunrise-yellow hover:bg-sunrise-pink text-gray-900 font-medium py-2 px-4 rounded-lg transition-colors duration-200;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg p-6 border border-gray-100;
+  }
+  
+  .input {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-burgundy focus:border-transparent;
+  }
+}

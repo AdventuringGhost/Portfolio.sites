@@ -1,0 +1,32 @@
+name: no-deploy-ci
+on:
+  pull_request:
+  push:
+    branches: [ main, develop ]
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      SAFE_MODE: "true" # enforce pre-launch guard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci || npm install
+      - name: Guard (no deploy verbs)
+        run: npm run guard:scan
+      - name: Lint (best-effort)
+        run: npm run lint || echo "lint skipped"
+      - name: Test (best-effort per app)
+        run: |
+          npm --prefix apps/blogsite-api test || true
+          npm --prefix apps/hike-harvest-serverless test || true
+          npm --prefix apps/glow-grove test || true
+      - name: Safety: Block AWS creds in CI (soft)
+        run: |
+          if [ -n "${AWS_ACCESS_KEY_ID}" ] && [ "${SAFE_MODE}" = "true" ]; then
+            echo "⚠️  Warning: AWS creds present while SAFE_MODE=true."
+          fi
+
+

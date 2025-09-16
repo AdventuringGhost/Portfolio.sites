@@ -1,0 +1,96 @@
+service: hike-harvest-serverless
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  
+  environment:
+    STAGE: ${self:provider.stage}
+    REGION: ${self:provider.region}
+  
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: "arn:aws:dynamodb:${self:provider.region}:*:table/hike-harvest-${self:provider.stage}"
+
+functions:
+  getRecipes:
+    handler: functions/getRecipes.handler
+    events:
+      - http:
+          path: recipes
+          method: get
+          cors: true
+    environment:
+      TABLE_NAME: hike-harvest-${self:provider.stage}
+
+  getRecipe:
+    handler: functions/getRecipe.handler
+    events:
+      - http:
+          path: recipes/{id}
+          method: get
+          cors: true
+    environment:
+      TABLE_NAME: hike-harvest-${self:provider.stage}
+
+  createRecipe:
+    handler: functions/createRecipe.handler
+    events:
+      - http:
+          path: recipes
+          method: post
+          cors: true
+    environment:
+      TABLE_NAME: hike-harvest-${self:provider.stage}
+
+  updateRecipe:
+    handler: functions/updateRecipe.handler
+    events:
+      - http:
+          path: recipes/{id}
+          method: put
+          cors: true
+    environment:
+      TABLE_NAME: hike-harvest-${self:provider.stage}
+
+  deleteRecipe:
+    handler: functions/deleteRecipe.handler
+    events:
+      - http:
+          path: recipes/{id}
+          method: delete
+          cors: true
+    environment:
+      TABLE_NAME: hike-harvest-${self:provider.stage}
+
+resources:
+  Resources:
+    RecipesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: hike-harvest-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+        BillingMode: PAY_PER_REQUEST
+
+plugins:
+  - serverless-offline
+
+# TODO: Expand with custom plugins and additional resources

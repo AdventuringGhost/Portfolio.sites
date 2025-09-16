@@ -1,0 +1,52 @@
+{
+  "name": "adventuringghost",
+  "version": "1.0.0",
+  "description": "Monorepo for React frontends",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "guard:scan": "node scripts/guard-no-deploy.js",
+    "plan:terraform": "terraform -chdir=terraform plan",
+    "sls:package": "serverless package",
+    "cdk:synth": "cdk synth",
+    "ci:verify": "npm run guard:scan && npm -v && node -v",
+    "dev": "npm run dev --workspace=apps/portfolio",
+    "dev:portfolio": "npm run dev --workspace=apps/portfolio",
+    "dev:glow-grove": "npm run dev --workspace=apps/glow-grove",
+    "dev:blogsite-api": "npm run dev --workspace=apps/blogsite-api",
+    "dev:hike-harvest": "npm run dev --workspace=apps/hike-harvest",
+    "dev:hike-harvest-api": "npm run dev --workspace=apps/hike-harvest-serverless",
+    "build": "npm run build --workspaces",
+    "build:portfolio": "npm run build --workspace=apps/portfolio",
+    "build:glow-grove": "npm run build --workspace=apps/glow-grove",
+    "build:hike-harvest": "npm run build --workspace=apps/hike-harvest",
+    "build:packages": "npm run build --workspace=packages/ui && npm run build --workspace=packages/types",
+    "test": "npm run test --workspaces",
+    "test:portfolio": "npm run test --workspace=apps/portfolio",
+    "test:glow-grove": "npm run test --workspace=apps/glow-grove",
+    "test:blogsite-api": "npm run test --workspace=apps/blogsite-api",
+    "lint": "eslint . --ext .js,.ts,.tsx || true",
+    "lint:fix": "eslint . --ext .js,.ts,.tsx --fix",
+    "format": "prettier -w .",
+    "format:check": "prettier --check .",
+    "clean": "npm run clean --workspaces",
+    "install:all": "npm install && npm run build:packages",
+    "start:portfolio": "npm run start --workspace=apps/portfolio",
+    "start:glow-grove": "npm run start --workspace=apps/glow-grove",
+    "start:blogsite-api": "npm run start --workspace=apps/blogsite-api",
+    "deploy:hike-harvest": "npm run deploy:dev --workspace=apps/hike-harvest-serverless",
+    "logs:blogsite-api": "npm run logs --workspace=apps/blogsite-api",
+    "logs:hike-harvest": "npm run logs --workspace=apps/hike-harvest-serverless"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
+}

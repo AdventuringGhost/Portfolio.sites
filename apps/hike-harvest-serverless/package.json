@@ -1,0 +1,23 @@
+{
+  "name": "hike-harvest-serverless",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "echo 'Serverless functions are ready for deployment'",
+    "dev": "serverless offline",
+    "deploy": "serverless deploy",
+    "deploy:dev": "serverless deploy --stage dev",
+    "deploy:prod": "serverless deploy --stage prod",
+    "remove": "serverless remove",
+    "test": "node -e \"console.log('sls tests TBD')\"",
+    "logs": "serverless logs -f getRecipes"
+  },
+  "devDependencies": {
+    "serverless": "^3.38.0",
+    "serverless-offline": "^13.4.0"
+  },
+  "dependencies": {
+    "adventuringghost": "file:../..",
+    "uuid": "^9.0.1"
+  }
+}

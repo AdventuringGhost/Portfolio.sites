@@ -1,0 +1,416 @@
+# Enterprise Network Configuration Templates
+# Copy and paste these configurations into Packet Tracer devices
+
+# ===========================================
+# CORE LAYER CONFIGURATIONS
+# ===========================================
+
+# Core-1 Switch Configuration
+enable
+configure terminal
+hostname Core-1
+vlan 10
+ name Management
+vlan 20
+ name Workstations
+vlan 30
+ name Servers
+vlan 40
+ name Guest
+vlan 50
+ name DMZ
+exit
+
+# Configure trunk ports
+interface GigabitEthernet 1/0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/5
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/6
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/7
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+spanning-tree vlan 10,20,30,40,50 root primary
+
+# Enable SSH
+ip domain-name enterprise.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# CORE ROUTER CONFIGURATION
+# ===========================================
+enable
+configure terminal
+hostname Core-Router
+
+# Configure interfaces
+interface GigabitEthernet 0/0
+ ip address 192.168.10.254 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/1
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/2
+ ip address 192.168.30.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/3
+ ip address 192.168.40.1 255.255.255.0
+ no shutdown
+
+# Configure routing
+ip route 0.0.0.0 0.0.0.0 203.0.113.1
+
+# Configure DHCP pools
+ip dhcp pool Workstations
+ network 192.168.20.0 255.255.255.0
+ default-router 192.168.20.1
+ dns-server 192.168.50.12
+ip dhcp pool Guest
+ network 192.168.40.0 255.255.255.0
+ default-router 192.168.40.1
+ dns-server 8.8.8.8
+
+# Configure NAT
+access-list 1 permit 192.168.20.0 0.0.0.255
+access-list 1 permit 192.168.30.0 0.0.0.255
+access-list 1 permit 192.168.40.0 0.0.0.255
+ip nat inside source list 1 interface GigabitEthernet 0/0 overload
+
+# Configure interfaces for NAT
+interface GigabitEthernet 0/1
+ ip nat inside
+interface GigabitEthernet 0/2
+ ip nat inside
+interface GigabitEthernet 0/3
+ ip nat inside
+interface GigabitEthernet 0/0
+ ip nat outside
+
+# Enable SSH
+ip domain-name enterprise.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# ASA FIREWALL CONFIGURATION
+# ===========================================
+enable
+configure terminal
+hostname ASA-Firewall
+
+# Configure interfaces
+interface GigabitEthernet 0/0
+ nameif inside
+ security-level 100
+ ip address 192.168.10.100 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/1
+ nameif inside2
+ security-level 100
+ ip address 192.168.10.101 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/2
+ nameif dmz
+ security-level 50
+ ip address 192.168.50.1 255.255.255.0
+ no shutdown
+interface GigabitEthernet 0/3
+ nameif outside
+ security-level 0
+ ip address 203.0.113.2 255.255.255.0
+ no shutdown
+
+# Configure routing
+route outside 0.0.0.0 0.0.0.0 203.0.113.1
+route inside 192.168.20.0 255.255.255.0 192.168.10.1
+route inside 192.168.30.0 255.255.255.0 192.168.10.1
+route inside 192.168.40.0 255.255.255.0 192.168.10.1
+
+# Configure NAT
+object network inside-net
+ subnet 192.168.20.0 255.255.255.0
+object network inside-servers
+ subnet 192.168.30.0 255.255.255.0
+object network guest-net
+ subnet 192.168.40.0 255.255.255.0
+object network dmz-net
+ subnet 192.168.50.0 255.255.255.0
+
+nat (inside,outside) source dynamic inside-net interface
+nat (inside,outside) source dynamic inside-servers interface
+nat (inside,outside) source dynamic guest-net interface
+nat (dmz,outside) source dynamic dmz-net interface
+
+# Configure access rules
+access-list inside-to-dmz permit tcp 192.168.20.0 255.255.255.0 192.168.50.0 255.255.255.0 eq 80
+access-list inside-to-dmz permit tcp 192.168.20.0 255.255.255.0 192.168.50.0 255.255.255.0 eq 443
+access-list inside-to-dmz permit tcp 192.168.20.0 255.255.255.0 192.168.50.0 255.255.255.0 eq 25
+access-list inside-to-dmz permit tcp 192.168.20.0 255.255.255.0 192.168.50.0 255.255.255.0 eq 53
+access-list inside-to-dmz permit udp 192.168.20.0 255.255.255.0 192.168.50.0 255.255.255.0 eq 53
+
+access-list inside-to-outside permit tcp 192.168.20.0 255.255.255.0 any eq 80
+access-list inside-to-outside permit tcp 192.168.20.0 255.255.255.0 any eq 443
+access-list inside-to-outside permit tcp 192.168.20.0 255.255.255.0 any eq 53
+access-list inside-to-outside permit udp 192.168.20.0 255.255.255.0 any eq 53
+
+access-list dmz-to-outside permit tcp 192.168.50.0 255.255.255.0 any eq 80
+access-list dmz-to-outside permit tcp 192.168.50.0 255.255.255.0 any eq 443
+access-list dmz-to-outside permit tcp 192.168.50.0 255.255.255.0 any eq 25
+access-list dmz-to-outside permit tcp 192.168.50.0 255.255.255.0 any eq 53
+access-list dmz-to-outside permit udp 192.168.50.0 255.255.255.0 any eq 53
+
+access-list outside-to-dmz permit tcp any 192.168.50.0 255.255.255.0 eq 80
+access-list outside-to-dmz permit tcp any 192.168.50.0 255.255.255.0 eq 443
+access-list outside-to-dmz permit tcp any 192.168.50.0 255.255.255.0 eq 25
+access-list outside-to-dmz permit tcp any 192.168.50.0 255.255.255.0 eq 53
+access-list outside-to-dmz permit udp any 192.168.50.0 255.255.255.0 eq 53
+
+# Apply access lists
+access-group inside-to-dmz in interface inside
+access-group inside-to-outside in interface inside
+access-group dmz-to-outside in interface dmz
+access-group outside-to-dmz in interface outside
+
+# Enable SSH
+username admin password admin123 privilege 15
+ssh version 2
+ssh 192.168.10.0 255.255.255.0 inside
+ssh 192.168.20.0 255.255.255.0 inside
+ssh 192.168.30.0 255.255.255.0 inside
+
+write memory
+exit
+
+# ===========================================
+# DISTRIBUTION SWITCH CONFIGURATION (Dist-1)
+# ===========================================
+enable
+configure terminal
+hostname Dist-1
+vlan 10
+ name Management
+vlan 20
+ name Workstations
+vlan 30
+ name Servers
+vlan 40
+ name Guest
+vlan 50
+ name DMZ
+exit
+
+# Configure trunk ports to core
+interface GigabitEthernet 1/0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure trunk ports to access switches
+interface GigabitEthernet 1/0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+interface GigabitEthernet 1/0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure access ports for servers
+interface GigabitEthernet 1/0/5
+ switchport mode access
+ switchport access vlan 30
+interface GigabitEthernet 1/0/6
+ switchport mode access
+ switchport access vlan 30
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.11 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+
+# Enable SSH
+ip domain-name enterprise.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# ACCESS SWITCH CONFIGURATION (Access-1)
+# ===========================================
+enable
+configure terminal
+hostname Access-1
+vlan 10
+ name Management
+vlan 20
+ name Workstations
+vlan 30
+ name Servers
+vlan 40
+ name Guest
+vlan 50
+ name DMZ
+exit
+
+# Configure trunk port to distribution
+interface FastEthernet 0/24
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,30,40,50
+
+# Configure access ports for workstations
+interface FastEthernet 0/1
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/2
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/3
+ switchport mode access
+ switchport access vlan 20
+interface FastEthernet 0/4
+ switchport mode access
+ switchport access vlan 20
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.21 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+
+# Enable SSH
+ip domain-name enterprise.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# DMZ SWITCH CONFIGURATION
+# ===========================================
+enable
+configure terminal
+hostname DMZ-Switch
+vlan 10
+ name Management
+vlan 50
+ name DMZ
+exit
+
+# Configure trunk port to firewall
+interface FastEthernet 0/24
+ switchport mode trunk
+ switchport trunk allowed vlan 10,50
+
+# Configure access ports for DMZ servers
+interface FastEthernet 0/1
+ switchport mode access
+ switchport access vlan 50
+interface FastEthernet 0/2
+ switchport mode access
+ switchport access vlan 50
+interface FastEthernet 0/3
+ switchport mode access
+ switchport access vlan 50
+
+# Configure management interface
+interface vlan 10
+ ip address 192.168.10.31 255.255.255.0
+ no shutdown
+
+# Configure spanning tree
+spanning-tree mode rapid-pvst
+
+# Enable SSH
+ip domain-name enterprise.local
+crypto key generate rsa general-keys modulus 1024
+username admin privilege 15 secret admin123
+line vty 0 15
+ transport input ssh
+ login local
+
+write memory
+exit
+
+# ===========================================
+# SERVER CONFIGURATIONS
+# ===========================================
+
+# Internal Servers (VLAN 30)
+# File Server: 192.168.30.10, Gateway: 192.168.30.1
+# Database Server: 192.168.30.11, Gateway: 192.168.30.1
+# Application Server: 192.168.30.12, Gateway: 192.168.30.1
+# DHCP Server: 192.168.30.13, Gateway: 192.168.30.1
+
+# DMZ Servers (VLAN 50)
+# Web Server: 192.168.50.10, Gateway: 192.168.50.1
+# Mail Server: 192.168.50.11, Gateway: 192.168.50.1
+# DNS Server: 192.168.50.12, Gateway: 192.168.50.1
+
+# ===========================================
+# PC CONFIGURATIONS
+# ===========================================
+
+# Workstation PCs (VLAN 20)
+# PC1: 192.168.20.10, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC2: 192.168.20.11, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC3: 192.168.20.12, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC4: 192.168.20.13, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC5: 192.168.20.14, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC6: 192.168.20.15, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC7: 192.168.20.16, Gateway: 192.168.20.1, DNS: 192.168.50.12
+# PC8: 192.168.20.17, Gateway: 192.168.20.1, DNS: 192.168.50.12
+
+# Guest Laptops (VLAN 40)
+# Laptop1: 192.168.40.10, Gateway: 192.168.40.1, DNS: 8.8.8.8
+# Laptop2: 192.168.40.11, Gateway: 192.168.40.1, DNS: 8.8.8.8
+
+# Network Printer (VLAN 20)
+# Printer: 192.168.20.20, Gateway: 192.168.20.1, DNS: 192.168.50.12

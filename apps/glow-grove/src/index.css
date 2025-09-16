@@ -1,0 +1,44 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* CSS Variables for the new color scheme */
+:root {
+  --sunrise-green: #78C841;
+  --sunrise-lime: #B4E50D;
+  --sunrise-orange: #FF9B2F;
+  --sunrise-red: #FB4141;
+  --pastel-green: #78C84180;
+  --pastel-lime: #B4E50D80;
+  --pastel-orange: #FF9B2F80;
+  --pastel-red: #FB414180;
+}
+
+/* Base styles */
+body {
+  font-family: 'Inter', sans-serif;
+  line-height: 1.6;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Shared component styles */
+@layer components {
+  .btn-primary {
+    @apply bg-sunrise-green hover:bg-sunrise-lime text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply bg-white hover:bg-gray-50 text-sunrise-green border-2 border-sunrise-green font-semibold py-2 px-6 rounded-lg transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100;
+  }
+
+  .input {
+    @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-sunrise-green focus:border-transparent transition-all duration-200;
+  }
+}

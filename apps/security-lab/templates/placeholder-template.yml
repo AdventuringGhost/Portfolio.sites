@@ -1,0 +1,77 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'Security Lab - IAM and WAF Configuration Template'
+
+Parameters:
+  Environment:
+    Type: String
+    Default: dev
+    AllowedValues: [dev, staging, prod]
+    Description: Environment name
+  
+  ApplicationName:
+    Type: String
+    Default: security-lab
+    Description: Name of the application
+
+Resources:
+  # IAM Role for Application
+  ApplicationRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub '${ApplicationName}-${Environment}-role'
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: SecurityLabPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                Resource: !Sub 'arn:aws:s3:::${ApplicationName}-${Environment}-bucket/*'
+
+  # WAF Web ACL
+  SecurityWebACL:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: !Sub '${ApplicationName}-${Environment}-waf'
+      Scope: CLOUDFRONT
+      DefaultAction:
+        Allow: {}
+      Rules:
+        - Name: AWSManagedRulesCommonRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: CommonRuleSetMetric
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+
+Outputs:
+  ApplicationRoleArn:
+    Description: ARN of the application IAM role
+    Value: !GetAtt ApplicationRole.Arn
+    Export:
+      Name: !Sub '${ApplicationName}-${Environment}-RoleArn'
+  
+  WebACLArn:
+    Description: ARN of the WAF Web ACL
+    Value: !GetAtt SecurityWebACL.Arn
+    Export:
+      Name: !Sub '${ApplicationName}-${Environment}-WebACLArn'
+
+# TODO: Expand with additional security resources and configurations

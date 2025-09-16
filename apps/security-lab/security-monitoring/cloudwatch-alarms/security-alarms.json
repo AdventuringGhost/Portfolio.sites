@@ -1,0 +1,257 @@
+{
+  "SecurityAlarms": [
+    {
+      "AlarmName": "High-Failed-Login-Attempts",
+      "AlarmDescription": "Alert when there are multiple failed login attempts",
+      "MetricName": "FailedLoginAttempts",
+      "Namespace": "AWS/IAM",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 10,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "OKActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "Root-Account-Usage",
+      "AlarmDescription": "Alert when root account is used",
+      "MetricName": "RootAccountUsage",
+      "Namespace": "AWS/IAM",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:CriticalSecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "Unauthorized-API-Calls",
+      "AlarmDescription": "Alert when unauthorized API calls are detected",
+      "MetricName": "UnauthorizedAPICalls",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 5,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "S3-Bucket-Policy-Changes",
+      "AlarmDescription": "Alert when S3 bucket policies are modified",
+      "MetricName": "S3BucketPolicyChanges",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "Security-Group-Changes",
+      "AlarmDescription": "Alert when security groups are modified",
+      "MetricName": "SecurityGroupChanges",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "Network-ACL-Changes",
+      "AlarmDescription": "Alert when network ACLs are modified",
+      "MetricName": "NetworkACLChanges",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "Route-Table-Changes",
+      "AlarmDescription": "Alert when route tables are modified",
+      "MetricName": "RouteTableChanges",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "VPC-Changes",
+      "AlarmDescription": "Alert when VPCs are modified",
+      "MetricName": "VPCChanges",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "GuardDuty-Findings",
+      "AlarmDescription": "Alert when GuardDuty findings are detected",
+      "MetricName": "GuardDutyFindings",
+      "Namespace": "AWS/GuardDuty",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:CriticalSecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "WAF-Blocked-Requests",
+      "AlarmDescription": "Alert when WAF blocks a high number of requests",
+      "MetricName": "BlockedRequests",
+      "Namespace": "AWS/WAFV2",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 100,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:SecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "High-CPU-Utilization",
+      "AlarmDescription": "Alert when EC2 instances have high CPU utilization",
+      "MetricName": "CPUUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 80,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:PerformanceAlerts"
+      ],
+      "TreatMissingData": "breaching"
+    },
+    {
+      "AlarmName": "High-Memory-Utilization",
+      "AlarmDescription": "Alert when EC2 instances have high memory utilization",
+      "MetricName": "MemoryUtilization",
+      "Namespace": "AWS/EC2",
+      "Statistic": "Average",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 85,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:PerformanceAlerts"
+      ],
+      "TreatMissingData": "breaching"
+    },
+    {
+      "AlarmName": "Database-Connection-Failures",
+      "AlarmDescription": "Alert when database connection failures occur",
+      "MetricName": "DatabaseConnections",
+      "Namespace": "AWS/RDS",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 2,
+      "Threshold": 10,
+      "ComparisonOperator": "GreaterThanThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:DatabaseAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "S3-Bucket-Public-Access",
+      "AlarmDescription": "Alert when S3 buckets become publicly accessible",
+      "MetricName": "S3BucketPublicAccess",
+      "Namespace": "AWS/S3",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:CriticalSecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    },
+    {
+      "AlarmName": "CloudTrail-Log-Delivery-Failures",
+      "AlarmDescription": "Alert when CloudTrail log delivery fails",
+      "MetricName": "CloudTrailLogDeliveryFailures",
+      "Namespace": "AWS/CloudTrail",
+      "Statistic": "Sum",
+      "Period": 300,
+      "EvaluationPeriods": 1,
+      "Threshold": 1,
+      "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+      "AlarmActions": [
+        "arn:aws:sns:us-east-1:123456789012:CriticalSecurityAlerts"
+      ],
+      "TreatMissingData": "notBreaching"
+    }
+  ],
+  "SNSTopics": [
+    {
+      "TopicName": "SecurityAlerts",
+      "DisplayName": "Security Alerts",
+      "Description": "Notifications for security-related events"
+    },
+    {
+      "TopicName": "CriticalSecurityAlerts",
+      "DisplayName": "Critical Security Alerts",
+      "Description": "Notifications for critical security events requiring immediate attention"
+    },
+    {
+      "TopicName": "PerformanceAlerts",
+      "DisplayName": "Performance Alerts",
+      "Description": "Notifications for performance-related issues"
+    },
+    {
+      "TopicName": "DatabaseAlerts",
+      "DisplayName": "Database Alerts",
+      "Description": "Notifications for database-related issues"
+    }
+  ]
+}
+
+
+

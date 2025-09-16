@@ -1,0 +1,163 @@
+import { useState } from 'react'
+import { Card, Button, Input } from '@adventuringghost/ui'
+import { SEO } from '../components/SEO'
+import { SocialLinks } from '../components/SocialLinks'
+
+export const Contact = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    subject: '',
+    message: ''
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    
+    // Simulate form submission
+    await new Promise(resolve => setTimeout(resolve, 1000))
+    
+    alert('Thank you for your message! I\'ll get back to you soon.')
+    setFormData({ name: '', email: '', subject: '', message: '' })
+    setIsSubmitting(false)
+  }
+
+  const handleChange = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
+
+  return (
+    <>
+      <SEO 
+        title="Contact - Adventuring Ghost"
+        description="Get in touch with me for new opportunities, collaborations, or just a friendly chat about technology."
+        keywords="contact, hire, collaboration, full-stack developer, opportunities"
+      />
+      <div className="space-y-8">
+        <div className="text-center">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4">Get in Touch</h1>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            I'm always interested in new opportunities, collaborations, or just a friendly chat about technology.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Contact Form */}
+          <Card>
+            <h2 className="text-2xl font-semibold mb-6">Send a Message</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <Input
+                label="Name"
+                placeholder="Your name"
+                value={formData.name}
+                onChange={(e) => handleChange('name', e.target.value)}
+                required
+              />
+              <Input
+                label="Email"
+                type="email"
+                placeholder="your.email@example.com"
+                value={formData.email}
+                onChange={(e) => handleChange('email', e.target.value)}
+                required
+              />
+              <Input
+                label="Subject"
+                placeholder="What's this about?"
+                value={formData.subject}
+                onChange={(e) => handleChange('subject', e.target.value)}
+                required
+              />
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Message
+                </label>
+                <textarea
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-sunrise-cyan focus:border-transparent resize-none"
+                  rows={5}
+                  placeholder="Tell me about your project or just say hello!"
+                  value={formData.message}
+                  onChange={(e) => handleChange('message', e.target.value)}
+                  required
+                />
+              </div>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full"
+              >
+                {isSubmitting ? 'Sending...' : 'Send Message'}
+              </Button>
+            </form>
+          </Card>
+
+          {/* Contact Information */}
+          <div className="space-y-6">
+            <Card>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-cyan">Let's Connect</h3>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-sunrise-cyan/10 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-sunrise-cyan" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z" />
+                      <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Email</p>
+                    <p className="text-gray-600">hello@adventuringghost.com</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-sunrise-orange/10 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-sunrise-orange" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Response Time</p>
+                    <p className="text-gray-600">Usually within 24 hours</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-center space-x-3">
+                  <div className="w-10 h-10 bg-sunrise-pink/10 rounded-lg flex items-center justify-center">
+                    <svg className="w-5 h-5 text-sunrise-pink" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0010 11z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="font-medium">Location</p>
+                    <p className="text-gray-600">Remote / Worldwide</p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            <Card>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-yellow">What I'm Looking For</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>• Full-stack development opportunities</li>
+                <li>• Frontend architecture consulting</li>
+                <li>• Open source collaborations</li>
+                <li>• Technical writing and tutorials</li>
+                <li>• Mentoring and code reviews</li>
+              </ul>
+            </Card>
+
+            <Card>
+              <h3 className="text-xl font-semibold mb-4">Follow Me</h3>
+              <p className="text-gray-600 mb-4">
+                Connect with me on social media for updates, behind-the-scenes content, and tech discussions.
+              </p>
+              <SocialLinks size="lg" />
+            </Card>
+          </div>
+        </div>
+      </div>
+    </>
+  )
+}

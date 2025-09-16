@@ -1,0 +1,125 @@
+openapi: 3.0.3
+info:
+  title: Blogsite API
+  version: 1.0.0
+  description: Auth, Posts, Comments, Health
+servers:
+  - url: http://localhost:4001
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: OK }
+  /api/auth/register:
+    post:
+      summary: Register
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Register' } } }
+      responses:
+        '201': { description: Created }
+        '400': { description: Validation error }
+  /api/auth/login:
+    post:
+      summary: Login
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/Login' } } }
+      responses:
+        '200': { description: OK }
+  /api/posts:
+    get:
+      summary: List posts
+      responses:
+        '200': { description: OK }
+    post:
+      summary: Create post
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/PostCreate' } } }
+      responses:
+        '201': { description: Created }
+  /api/posts/{slug}:
+    get:
+      summary: Get by slug
+      parameters: [{ name: slug, in: path, required: true, schema: { type: string } }]
+      responses:
+        '200': { description: OK }
+  /api/quiz-results:
+    post:
+      summary: Submit quiz results
+      requestBody:
+        required: true
+        content: { application/json: { schema: { $ref: '#/components/schemas/QuizSubmission' } } }
+      responses:
+        '201': 
+          description: Quiz results submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  quiz_result_id:
+                    type: string
+                    example: "qr_abc123"
+                  createdAt:
+                    type: string
+                    format: date-time
+                    example: "2024-01-01T00:00:00.000Z"
+        '400': 
+          description: Invalid payload
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid payload"
+                  issues:
+                    type: array
+                    items:
+                      type: object
+        '429':
+          description: Too many requests
+components:
+  schemas:
+    Register:
+      type: object
+      required: [username, email, password]
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, minLength: 8 }
+    Login:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, format: email }
+        password: { type: string }
+    PostCreate:
+      type: object
+      required: [title, content]
+      properties:
+        title: { type: string }
+        content: { type: string }
+        categories: { type: array, items: { type: string } }
+    QuizSubmission:
+      type: object
+      required: [answers, result]
+      properties:
+        answers: { type: array, items: { type: string } }
+        result:
+          type: object
+          required: [title, items]
+          properties:
+            title: { type: string }
+            items: { type: array, items: { type: string } }
+        meta:
+          type: object
+          properties:
+            ua: { type: string }
