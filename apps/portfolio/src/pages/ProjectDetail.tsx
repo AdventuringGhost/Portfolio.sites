@@ -3,6 +3,7 @@ import { Card, Button } from '@adventuringghost/ui'
 import { SEO } from '../components/SEO'
 import { ProjectLinks } from '../components/ProjectLinks'
 import { projects } from '../data/projects'
+import { images } from '../assets/images'
 
 export const ProjectDetail = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -1125,86 +1126,150 @@ export const ProjectDetail = () => {
                    <div>
                      <h3 className="text-lg font-semibold text-gray-900 mb-2">Network Topology</h3>
                      <img 
-                       src="/screenshots/netops/Screenshot 2025-09-10 Campus Topology.png" 
+                       src={images.netopsShowcase} 
                        alt="Campus Network Topology showing Core Router, Distribution Switches, Access Switches, and ISP Router"
                        className="w-full rounded-lg border border-gray-200"
                        onError={(e) => {
+                         console.error('Failed to load NetOps topology image')
                          e.currentTarget.style.display = 'none'
                        }}
-                     />
-                   </div>
-                   <div>
-                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Core Router Configuration</h3>
-                     <img 
-                       src="/screenshots/netops/Core-Router.show.run.png" 
-                       alt="Core Router running configuration showing VLAN subinterfaces and routing"
-                       className="w-full rounded-lg border border-gray-200"
-                       onError={(e) => {
-                         e.currentTarget.style.display = 'none'
+                       onLoad={() => {
+                         console.log('Successfully loaded NetOps topology image')
                        }}
                      />
                    </div>
                  </div>
                  <div className="space-y-4">
                    <div>
-                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Switch VLAN Configuration</h3>
-                     <img 
-                       src="/screenshots/netops/Screenshot 2025-09-10 120519.png" 
-                       alt="Switch VLAN configuration showing VLAN assignments and trunking"
-                       className="w-full rounded-lg border border-gray-200"
-                       onError={(e) => {
-                         e.currentTarget.style.display = 'none'
-                       }}
-                     />
-                   </div>
-                   <div>
-                     <h3 className="text-lg font-semibold text-gray-900 mb-2">PC Connectivity Test</h3>
-                     <img 
-                       src="/screenshots/netops/Screenshot 2025-09-10 121426.png" 
-                       alt="PC connectivity test showing successful ping to gateway and internet"
-                       className="w-full rounded-lg border border-gray-200"
-                       onError={(e) => {
-                         e.currentTarget.style.display = 'none'
-                       }}
-                     />
+                     <h3 className="text-lg font-semibold text-gray-900 mb-2">Project Overview</h3>
+                     <p className="text-gray-600 mb-4">
+                       This campus network build demonstrates comprehensive CCNA-level networking skills including VLAN segmentation, 
+                       inter-VLAN routing, DHCP services, and NAT/PAT configuration for internet connectivity.
+                     </p>
+                     <div className="bg-gray-50 rounded-lg p-4">
+                       <h4 className="font-semibold text-gray-900 mb-2">Key Achievements:</h4>
+                       <ul className="text-sm text-gray-700 space-y-1">
+                         <li>• End-to-end connectivity verification</li>
+                         <li>• Successful DHCP address assignment</li>
+                         <li>• NAT translations working properly</li>
+                         <li>• HTTP connectivity to internet server</li>
+                       </ul>
+                     </div>
                    </div>
                  </div>
                </div>
-               <div className="mt-6">
-                 <h3 className="text-lg font-semibold text-gray-900 mb-4">Additional Configuration Screenshots</h3>
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+             </Card>
+           </section>
+
+           {/* Detailed Configuration Screenshots */}
+           <section>
+             <Card className="p-8">
+               <h2 className="text-3xl font-bold mb-6 text-gray-900">🔧 Configuration Details</h2>
+               <p className="text-gray-600 mb-6">
+                 Here's a detailed look at the key configuration steps and troubleshooting process that made this network build successful.
+               </p>
+               
+               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div className="space-y-6">
+                   <div>
+                     <h3 className="text-lg font-semibold text-gray-900 mb-3">Core Router Configuration</h3>
+                     <img 
+                       src={images.netopsCoreRouter} 
+                       alt="Core Router running configuration showing VLAN subinterfaces, DHCP pools, and NAT configuration"
+                       className="w-full rounded-lg border border-gray-200"
+                       onError={(e) => {
+                         console.error('Failed to load Core Router config')
+                         e.currentTarget.style.display = 'none'
+                       }}
+                     />
+                     <p className="text-sm text-gray-600 mt-2">
+                       Router-on-a-stick configuration with VLAN subinterfaces, DHCP pools for each VLAN, and NAT overload for internet access.
+                     </p>
+                   </div>
+                   
+                   <div>
+                     <h3 className="text-lg font-semibold text-gray-900 mb-3">VLAN Configuration</h3>
+                     <img 
+                       src={images.netopsVlanConfig} 
+                       alt="Switch VLAN configuration showing VLAN assignments and trunking setup"
+                       className="w-full rounded-lg border border-gray-200"
+                       onError={(e) => {
+                         console.error('Failed to load VLAN config')
+                         e.currentTarget.style.display = 'none'
+                       }}
+                     />
+                     <p className="text-sm text-gray-600 mt-2">
+                       Access switch port configuration ensuring PCs are assigned to the correct VLANs for proper network segmentation.
+                     </p>
+                   </div>
+                 </div>
+                 
+                 <div className="space-y-6">
+                   <div>
+                     <h3 className="text-lg font-semibold text-gray-900 mb-3">DHCP Configuration</h3>
+                     <img 
+                       src={images.netopsDhcpConfig} 
+                       alt="DHCP pool configuration showing IP ranges and exclusions for each VLAN"
+                       className="w-full rounded-lg border border-gray-200"
+                       onError={(e) => {
+                         console.error('Failed to load DHCP config')
+                         e.currentTarget.style.display = 'none'
+                       }}
+                     />
+                     <p className="text-sm text-gray-600 mt-2">
+                       DHCP pools configured with proper IP ranges and exclusions to prevent conflicts with gateway and infrastructure addresses.
+                     </p>
+                   </div>
+                   
+                   <div>
+                     <h3 className="text-lg font-semibold text-gray-900 mb-3">NAT Configuration</h3>
+                     <img 
+                       src={images.netopsNatConfig} 
+                       alt="NAT overload configuration showing inside and outside interface assignments"
+                       className="w-full rounded-lg border border-gray-200"
+                       onError={(e) => {
+                         console.error('Failed to load NAT config')
+                         e.currentTarget.style.display = 'none'
+                       }}
+                     />
+                     <p className="text-sm text-gray-600 mt-2">
+                       NAT overload (PAT) configuration enabling internet access for all internal VLANs through the ISP connection.
+                     </p>
+                   </div>
+                 </div>
+               </div>
+               
+               <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+                 <div>
+                   <h3 className="text-lg font-semibold text-gray-900 mb-3">ISP Router Setup</h3>
                    <img 
-                     src="/screenshots/netops/Screenshot 2025-09-10 120615.png" 
-                     alt="DHCP Configuration"
+                     src={images.netopsIspRouter} 
+                     alt="ISP Router configuration showing WAN and LAN interface setup"
                      className="w-full rounded-lg border border-gray-200"
                      onError={(e) => {
+                       console.error('Failed to load ISP Router config')
                        e.currentTarget.style.display = 'none'
                      }}
                    />
+                   <p className="text-sm text-gray-600 mt-2">
+                     ISP Router configured with /30 WAN link to Core Router and connection to internet server (8.8.8.8).
+                   </p>
+                 </div>
+                 
+                 <div>
+                   <h3 className="text-lg font-semibold text-gray-900 mb-3">End-to-End Connectivity Test</h3>
                    <img 
-                     src="/screenshots/netops/Screenshot 2025-09-10 120738.png" 
-                     alt="NAT Configuration"
+                     src={images.netopsConnectivity} 
+                     alt="PC connectivity test showing successful ping to gateway and internet server"
                      className="w-full rounded-lg border border-gray-200"
                      onError={(e) => {
-                       e.currentTarget.style.display = 'none'
-                     }}
+                         console.error('Failed to load connectivity test')
+                         e.currentTarget.style.display = 'none'
+                       }}
                    />
-                   <img 
-                     src="/screenshots/netops/Screenshot 2025-09-10 121309.png" 
-                     alt="ISP Router Setup"
-                     className="w-full rounded-lg border border-gray-200"
-                     onError={(e) => {
-                       e.currentTarget.style.display = 'none'
-                     }}
-                   />
-                   <img 
-                     src="/screenshots/netops/Screenshot 2025-09-10 121551.png" 
-                     alt="End-to-End Connectivity"
-                     className="w-full rounded-lg border border-gray-200"
-                     onError={(e) => {
-                       e.currentTarget.style.display = 'none'
-                     }}
-                   />
+                   <p className="text-sm text-gray-600 mt-2">
+                     Final verification showing successful ping from Student PC to gateway (192.168.10.1) and internet server (8.8.8.8).
+                   </p>
                  </div>
                </div>
              </Card>

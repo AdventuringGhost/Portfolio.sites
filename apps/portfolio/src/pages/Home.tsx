@@ -16,11 +16,11 @@ export const Home = () => {
       />
       <div className="space-y-20">
         {/* Hero Section */}
-        <section className="text-center py-20 bg-gradient-to-br from-custom-cream/50 via-custom-cream/30 to-custom-orange/20 rounded-2xl border-2 border-custom-green/20 shadow-lg">
+        <section className="text-center py-20 bg-gradient-to-br from-custom-sunshine/50 via-custom-sunshine/30 to-custom-coral/20 rounded-2xl border-2 border-custom-mint/20 shadow-lg">
           <div className="max-w-4xl mx-auto px-4">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 leading-tight">
-              <span className="text-custom-green">Adventuring</span>{' '}
-              <span className="text-custom-burgundy">Ghost</span>
+              <span className="text-custom-mint">Adventuring</span>{' '}
+              <span className="text-custom-pink">Ghost</span>
             </h1>
             <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
               Full-stack developer crafting digital experiences with modern technologies.
@@ -32,16 +32,16 @@ export const Home = () => {
                   className="font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 py-3 px-6 text-lg"
                   style={{ 
                     backgroundColor: 'transparent',
-                    color: '#78C841',
-                    border: '2px solid #78C841'
+                    color: '#B1D690',
+                    border: '2px solid #B1D690'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#78C841';
+                    e.currentTarget.style.backgroundColor = '#B1D690';
                     e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.backgroundColor = 'transparent';
-                    e.currentTarget.style.color = '#78C841';
+                    e.currentTarget.style.color = '#B1D690';
                   }}
                 >
                   View Projects
@@ -51,16 +51,16 @@ export const Home = () => {
                 <button 
                   className="font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 py-3 px-6 text-lg"
                   style={{ 
-                    backgroundColor: '#B4E50D',
+                    backgroundColor: '#FEEC37',
                     color: '#1f2937',
                     border: 'none'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.backgroundColor = '#FB4141';
+                    e.currentTarget.style.backgroundColor = '#FF77B7';
                     e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.backgroundColor = '#B4E50D';
+                    e.currentTarget.style.backgroundColor = '#FEEC37';
                     e.currentTarget.style.color = '#1f2937';
                   }}
                 >
@@ -73,40 +73,55 @@ export const Home = () => {
 
         {/* Section Separator */}
         <div className="flex items-center justify-center py-8">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-green/30 to-transparent"></div>
-          <div className="mx-6 w-3 h-3 bg-custom-green rounded-full"></div>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-green/30 to-transparent"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-mint/30 to-transparent"></div>
+          <div className="mx-6 w-3 h-3 bg-custom-mint rounded-full"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-mint/30 to-transparent"></div>
         </div>
 
         {/* Skills Section */}
         <section>
-          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">Skills & Technologies</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8">⚡ Skills & Technologies</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
-              <h3 className="text-xl font-semibold mb-4 text-sunrise-cyan">Frontend</h3>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-cyan">Cloud & Infrastructure</h3>
               <ul className="space-y-2 text-gray-600">
-                <li>React & TypeScript</li>
-                <li>Next.js & Vite</li>
-                <li>Tailwind CSS</li>
-                <li>State Management</li>
+                <li>AWS (EC2, S3, IAM, Route 53, CloudFront, Lambda, DynamoDB, CloudWatch)</li>
+                <li>Serverless Architecture & APIs</li>
+                <li>Infrastructure as Code (IaC) with AWS CLI</li>
               </ul>
             </Card>
             <Card>
-              <h3 className="text-xl font-semibold mb-4 text-sunrise-orange">Backend</h3>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-orange">Networking & Systems</h3>
               <ul className="space-y-2 text-gray-600">
-                <li>Node.js & Express</li>
-                <li>Python & Django</li>
-                <li>Databases (SQL/NoSQL)</li>
-                <li>API Development</li>
+                <li>Cisco Networking (Routing, Switching, VLANs, NAT, DHCP, Subnetting)</li>
+                <li>Network Simulation with Cisco Packet Tracer</li>
+                <li>VPN, Firewall, and Traffic Monitoring (Sniffer/Packet Analysis)</li>
+                <li>Linux System Administration (Ubuntu, CentOS)</li>
               </ul>
             </Card>
             <Card>
-              <h3 className="text-xl font-semibold mb-4 text-sunrise-pink">Tools</h3>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-pink">Development & Automation</h3>
               <ul className="space-y-2 text-gray-600">
-                <li>Git & GitHub</li>
-                <li>Docker & CI/CD</li>
-                <li>AWS & Vercel</li>
-                <li>Testing & Debugging</li>
+                <li>Node.js / Express (API Development)</li>
+                <li>React / TypeScript (Frontend Development)</li>
+                <li>Git & GitHub (Version Control & Collaboration)</li>
+                <li>CI/CD Concepts (build, test, deploy pipelines)</li>
+              </ul>
+            </Card>
+            <Card>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-yellow">Security & Monitoring</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>Ethical Hacking Fundamentals (Metasploitable Labs, VMware)</li>
+                <li>Identity & Access Management (MFA, Role-based Permissions)</li>
+                <li>Basic Penetration Testing & Network Hardening</li>
+              </ul>
+            </Card>
+            <Card>
+              <h3 className="text-xl font-semibold mb-4 text-sunrise-cyan">Other Tools & Practices</h3>
+              <ul className="space-y-2 text-gray-600">
+                <li>Docker (Container Basics)</li>
+                <li>Agile / Scrum Project Workflows</li>
+                <li>Documentation & Diagramming (Markdown, Draw.io, Lucidchart)</li>
               </ul>
             </Card>
           </div>
@@ -114,9 +129,9 @@ export const Home = () => {
 
         {/* Section Separator */}
         <div className="flex items-center justify-center py-6">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-orange/20 to-transparent"></div>
-          <div className="mx-4 w-2 h-2 bg-custom-orange rounded-full"></div>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-orange/20 to-transparent"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-coral/20 to-transparent"></div>
+          <div className="mx-4 w-2 h-2 bg-custom-coral rounded-full"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-coral/20 to-transparent"></div>
         </div>
 
         {/* Live Projects */}
@@ -166,18 +181,20 @@ export const Home = () => {
 
         {/* Section Separator */}
         <div className="flex items-center justify-center py-6">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-burgundy/20 to-transparent"></div>
-          <div className="mx-4 w-2 h-2 bg-custom-burgundy rounded-full"></div>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-burgundy/20 to-transparent"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-pink/20 to-transparent"></div>
+          <div className="mx-4 w-2 h-2 bg-custom-pink rounded-full"></div>
+          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-custom-pink/20 to-transparent"></div>
         </div>
 
         {/* Recent Work */}
         <section>
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl sm:text-3xl font-bold">All Projects</h2>
-            <Link to="/projects">
-              <Button variant="secondary">View All Projects</Button>
-            </Link>
+          <div className="flex items-center justify-center mb-8 relative">
+            <h2 className="text-2xl sm:text-3xl font-bold text-center">All Projects</h2>
+            <div className="absolute right-0">
+              <Link to="/projects">
+                <Button variant="secondary">View All Projects</Button>
+              </Link>
+            </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {recentProjects.map((project) => (

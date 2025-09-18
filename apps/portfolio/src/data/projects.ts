@@ -1,4 +1,5 @@
 import type { Project } from "@adventuringghost/types";
+import { images } from "../assets/images";
 
 export const projects: Project[] = [
   {
@@ -6,23 +7,28 @@ export const projects: Project[] = [
     title: "AdventuringGhost Portfolio",
     tagline: "Sleek, sunrise-themed developer portfolio",
     description:
-      "A polished monorepo-based portfolio showcasing projects, resume highlights, and case studies. Built with React (Vite + TypeScript) and Tailwind CSS, with a shared UI library and SEO/accessibility baked in.",
+      "A polished monorepo-based portfolio showcasing projects, resume highlights, and case studies. Features a comprehensive About Me page with personal story, profile photo, and detailed skills sections. Built with React (Vite + TypeScript) and Tailwind CSS, with a shared UI library and SEO/accessibility baked in.",
     tech: ["React", "TypeScript", "Vite", "TailwindCSS", "Monorepo (npm workspaces)"],
     links: {
       live: "https://adventuringghost.com",
       github: "https://github.com/AdventuringGhost/Portfolio.sites",
       caseStudy: "CASE_STUDY_URL_PLACEHOLDER"
     },
-    status: "Live",
+    status: "You Are Here",
     date: "2025-08-27",
     highlights: [
       "Shared UI package across apps",
       "SEO + accessibility optimizations",
       "Structured project detail pages with links",
       "Graceful image error handling to prevent layout shifts",
-      "Responsive, sunrise-themed design system"
+      "Responsive, sunrise-themed design system",
+      "About Me page with personal story and DevOps focus",
+      "Profile photo integration with fallback system",
+      "Comprehensive Skills & Technologies sections",
+      "Updated navigation with About tab",
+      "Enhanced call-to-action with green button animations"
     ],
-    thumbnail: "/portfolio-screenshot.png"
+    thumbnail: images.portfolio
   },
   {
     slug: "hike-harvest",
@@ -52,7 +58,7 @@ export const projects: Project[] = [
       "Mobile-first responsive design with inward animations",
       "Accessibility-compliant with alt text and keyboard navigation"
     ],
-    thumbnail: "/hike-harvest-screenshot.png"
+    thumbnail: images.hikeHarvest
   },
   {
     slug: "glow-grove",
@@ -83,24 +89,26 @@ export const projects: Project[] = [
       "Demo-safe checkout with clear disclaimers",
       "Console-based e-commerce analytics tracking"
     ],
-    thumbnail: "/glow-grove-screenshot.png"
+    thumbnail: images.glowGrove
   },
   {
     slug: "security-lab",
     title: "Security Lab",
-    tagline: "AWS + ethical hacking labs showcase",
+    tagline: "Up next: AWS Data Engineering, AWS Security & CompTIA Security+",
     description:
-      "A documentation-style site demonstrating security labs: AWS IAM, S3 encryption, Lambda exploits, and basic ethical hacking drills. Includes screenshots and write-ups.",
-    tech: ["AWS", "React", "Markdown docs", "Security tools"],
+      "Coming soon: A comprehensive security learning journey focusing on AWS Data Engineering, AWS Security specializations, and CompTIA Security+ SY0-701 certification. This project will document hands-on labs, security best practices, and real-world scenarios as I work towards these industry-recognized certifications.",
+    tech: ["AWS Data Engineering", "AWS Security", "CompTIA Security+", "Cloud Security"],
     links: {
       github: "https://github.com/yourname/security-lab"
     },
-    status: "Archived",
-    date: "2025-08-29",
+    status: "WIP",
+    date: "2025-01-15",
     highlights: [
-      "AWS security labs documented step by step",
-      "Ethical hacking drills",
-      "Visual walkthroughs and code samples"
+      "AWS Data Engineering fundamentals and best practices",
+      "AWS Security specialization preparation",
+      "CompTIA Security+ SY0-701 certification track",
+      "Hands-on security labs and documentation",
+      "Real-world security scenarios and case studies"
     ]
   },
   {
@@ -119,25 +127,28 @@ export const projects: Project[] = [
       "Multi-router Packet Tracer labs",
       "VLANs, routing protocols, trunking",
       "Internet simulation and lab configs"
-    ]
+    ],
+    thumbnail: images.netopsShowcase
   },
   {
-    slug: "blogsite",
-    title: "BlogSite",
-    tagline: "Full-stack blog platform with Node/React/Mongo",
+    slug: "municipal-hospital-netops",
+    title: "Municipal Hospital NetOps",
+    tagline: "Enterprise network infrastructure for healthcare",
     description:
-      "A custom full-stack blog platform. Features user auth, rich text posts, comments, tags, and an admin dashboard. Built as a professional full-stack project for the portfolio.",
-    tech: ["Node.js", "Express", "MongoDB", "React"],
+      "Comprehensive network design and implementation for a municipal hospital system. Features redundant core switching, VLAN segmentation for departments, wireless access points, and security policies for HIPAA compliance.",
+    tech: ["Cisco Packet Tracer", "Enterprise Networking", "VLAN Design", "Security Policies"],
     links: {
-      live: "https://example.com/blogsite",
-      github: "https://github.com/yourname/blogsite"
+      github: "https://github.com/yourname/municipal-hospital-netops"
     },
     status: "WIP",
-    date: "2025-09-01",
+    date: "2025-01-15",
     highlights: [
-      "Full CRUD backend API",
-      "MongoDB Atlas integration",
-      "Polished frontend with auth and admin tools"
+      "Multi-building campus network topology",
+      "Department-specific VLAN segmentation",
+      "Redundant core switching for high availability",
+      "Wireless access point deployment",
+      "Security policies for HIPAA compliance",
+      "Network monitoring and management"
     ]
-  }
+  },
 ];

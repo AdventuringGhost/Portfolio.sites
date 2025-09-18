@@ -15,14 +15,21 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         return 'bg-sunrise-yellow/20 text-sunrise-orange'
       case 'Archived':
         return 'bg-gray-100 text-gray-800'
+      case 'You Are Here':
+        return 'bg-red-600 text-white font-bold'
       default:
         return 'bg-gray-100 text-gray-800'
     }
   }
 
+  // Special styling for Portfolio project
+  const isPortfolio = project.slug === 'portfolio'
+
   return (
     <Link to={`/projects/${project.slug}`} className="block group">
-      <Card className="h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
+      <Card className={`h-full hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02] ${
+        isPortfolio ? 'bg-custom-mint/20 border-2 border-custom-mint' : ''
+      }`}>
         {project.thumbnail && (
           <div className="mb-4 overflow-hidden rounded-lg bg-gray-100">
             <img
@@ -30,8 +37,12 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
               alt={`${project.title} thumbnail`}
               className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
               onError={(e) => {
-                // Hide the image if it fails to load
-                e.currentTarget.style.display = 'none'
+                console.error('Failed to load image:', project.thumbnail)
+                // Show a placeholder instead of hiding
+                e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='
+              }}
+              onLoad={() => {
+                console.log('Successfully loaded image:', project.thumbnail)
               }}
             />
           </div>

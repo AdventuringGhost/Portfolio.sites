@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { Footer } from './components/Footer'
 import { ScrollToTop } from './components/ScrollToTop'
 import { Home } from './pages/Home'
+import { About } from './pages/About'
 import { ProjectsIndex } from './pages/ProjectsIndex'
 import { ProjectDetail } from './pages/ProjectDetail'
 import { Notes } from './pages/Notes'
@@ -19,6 +20,7 @@ function App() {
           <div className="max-w-7xl mx-auto">
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
               <Route path="/projects" element={<ProjectsIndex />} />
               <Route path="/projects/:slug" element={<ProjectDetail />} />
               <Route path="/notes" element={<Notes />} />

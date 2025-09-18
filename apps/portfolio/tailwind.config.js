@@ -9,10 +9,10 @@ export default {
     extend: {
       colors: {
         custom: {
-          green: '#78C841',
-          cream: '#B4E50D',
-          orange: '#FF9B2F',
-          burgundy: '#FB4141',
+          mint: '#B1D690',
+          sunshine: '#FEEC37',
+          coral: '#FFA24C',
+          pink: '#FF77B7',
         }
       },
       fontFamily: {

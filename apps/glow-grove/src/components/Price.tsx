@@ -44,3 +44,6 @@ export const Price = ({ amount, className = '' }: PriceProps) => {
 
 
 
+
+
+

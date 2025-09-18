@@ -10,6 +10,7 @@ export const Header = () => {
   
   const navItems = [
     { path: '/', label: 'Home' },
+    { path: '/about', label: 'About' },
     { path: '/projects', label: 'Projects' },
     { path: '/notes', label: 'Notes' }
   ]
@@ -57,7 +58,7 @@ export const Header = () => {
     <header className="bg-white shadow-sm border-b border-gray-100 sticky top-0 z-50">
       <div className="container mx-auto px-4">
         <div className="flex items-center h-16">
-          <Link to="/" className="text-lg sm:text-xl md:text-2xl font-bold text-custom-burgundy hover:text-custom-orange transition-colors duration-200 no-underline">
+          <Link to="/" className="text-lg sm:text-xl md:text-2xl font-bold text-custom-pink hover:text-custom-coral transition-colors duration-200 no-underline">
             Adventuring Ghost
           </Link>
           
@@ -65,7 +66,7 @@ export const Header = () => {
           <nav className="hidden md:block relative ml-auto" ref={dropdownRef}>
             <button
               onClick={toggleDropdown}
-              className="flex items-center space-x-1 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-custom-burgundy hover:text-white hover:bg-custom-green border border-custom-green hover:border-custom-green focus:outline-none focus:ring-2 focus:ring-custom-green focus:ring-offset-2"
+              className="flex items-center space-x-1 px-4 py-2 rounded-md text-sm font-medium transition-colors duration-200 text-custom-pink hover:text-white hover:bg-custom-mint border border-custom-mint hover:border-custom-mint focus:outline-none focus:ring-2 focus:ring-custom-mint focus:ring-offset-2"
             >
               <span>Menu</span>
               <svg
@@ -94,8 +95,8 @@ export const Header = () => {
                     onClick={closeDropdown}
                     className={`block px-4 py-2 text-sm transition-colors duration-200 ${
                       location.pathname === item.path
-                        ? 'text-custom-green bg-custom-cream'
-                        : 'text-custom-burgundy hover:text-custom-green hover:bg-custom-cream'
+                        ? 'text-custom-mint bg-custom-sunshine'
+                        : 'text-custom-pink hover:text-custom-mint hover:bg-custom-sunshine'
                     }`}
                   >
                     {item.label}
@@ -109,14 +110,14 @@ export const Header = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={closeDropdown}
-                    className="block px-4 py-2 text-sm transition-colors duration-200 text-custom-burgundy hover:text-custom-orange hover:bg-custom-cream"
+                    className="block px-4 py-2 text-sm transition-colors duration-200 text-custom-pink hover:text-custom-coral hover:bg-custom-sunshine"
                   >
                     {link.label} ↗
                   </a>
                 ))}
                 <div className="border-t border-gray-100 my-1"></div>
                 <Link to="/contact" onClick={closeDropdown}>
-                  <div className="block px-4 py-2 text-sm transition-colors duration-200 text-custom-burgundy hover:text-custom-green hover:bg-custom-cream">
+                  <div className="block px-4 py-2 text-sm transition-colors duration-200 text-custom-pink hover:text-custom-mint hover:bg-custom-sunshine">
                     Contact Me
                   </div>
                 </Link>
@@ -129,7 +130,7 @@ export const Header = () => {
             <div className="md:hidden">
               <button
                 onClick={toggleMobileMenu}
-                className="p-2 rounded-md text-custom-burgundy hover:text-white hover:bg-custom-green border border-custom-green hover:border-custom-green focus:outline-none focus:ring-2 focus:ring-custom-green focus:ring-offset-2 transition-colors duration-200"
+                className="p-2 rounded-md text-custom-pink hover:text-white hover:bg-custom-mint border border-custom-mint hover:border-custom-mint focus:outline-none focus:ring-2 focus:ring-custom-mint focus:ring-offset-2 transition-colors duration-200"
                 aria-label="Toggle mobile menu"
               >
                 <svg
@@ -169,8 +170,8 @@ export const Header = () => {
                   onClick={closeMobileMenu}
                   className={`block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 ${
                     location.pathname === item.path
-                      ? 'text-custom-green bg-custom-cream'
-                      : 'text-custom-burgundy hover:text-custom-green hover:bg-custom-cream'
+                      ? 'text-custom-mint bg-custom-sunshine'
+                      : 'text-custom-pink hover:text-custom-mint hover:bg-custom-sunshine'
                   }`}
                 >
                   {item.label}
@@ -184,7 +185,7 @@ export const Header = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={closeMobileMenu}
-                    className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 text-custom-burgundy hover:text-custom-orange hover:bg-custom-cream"
+                    className="block px-3 py-2 rounded-md text-base font-medium transition-colors duration-200 text-custom-pink hover:text-custom-coral hover:bg-custom-sunshine"
                   >
                     {link.label} ↗
                   </a>

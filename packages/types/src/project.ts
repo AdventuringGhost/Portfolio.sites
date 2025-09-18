@@ -12,6 +12,6 @@ export type Project = {
   };
   thumbnail?: string;        // optional image path
   date?: string;             // ISO (for sorting)
-  status?: "WIP" | "Live" | "Archived";
+  status?: "WIP" | "Live" | "Archived" | "You Are Here";
   highlights?: string[];     // bullets
 };

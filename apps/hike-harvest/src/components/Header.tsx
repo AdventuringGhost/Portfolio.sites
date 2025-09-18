@@ -21,39 +21,28 @@ export const Header = () => {
   }
 
   return (
-    <header 
-      className="sticky top-0 z-50" 
-      style={{ 
-        backgroundColor: '#F0F2BD',
-        borderBottom: '3px solid #CA7842',
-        boxShadow: '0 4px 20px rgba(75, 53, 42, 0.15)'
-      }}
-    >
-      <div className="container mx-auto px-8 max-w-7xl">
-        <div className="flex items-center justify-between h-64">
+    <header className="sticky top-0 z-50 bg-white border-b border-neutral-200 shadow-sm">
+      <div className="container mx-auto px-6 max-w-7xl">
+        <div className="flex items-center justify-between h-20">
           {/* Logo */}
           <Link 
             to="/" 
-            className="text-5xl font-bold transition-colors duration-200" 
-            style={{ color: '#4B352A' }}
+            className="text-3xl font-bold text-neutral-800 transition-colors duration-200 hover:text-mint-500"
           >
             🏔️ Hike Harvest
           </Link>
           
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-2">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 to={item.path}
-                className={`px-8 py-4 rounded-3xl text-xl font-medium transition-colors duration-200 ${
+                className={`px-6 py-3 rounded-full text-lg font-medium transition-all duration-200 ${
                   location.pathname === item.path 
-                    ? 'text-white' 
-                    : 'text-[#4B352A] hover:text-[#CA7842]'
+                    ? 'bg-mint-500 text-white shadow-md' 
+                    : 'text-neutral-600 hover:text-mint-500 hover:bg-mint-50'
                 }`}
-                style={{
-                  backgroundColor: location.pathname === item.path ? '#CA7842' : 'transparent'
-                }}
               >
                 {item.label}
               </Link>
@@ -61,44 +50,20 @@ export const Header = () => {
           </nav>
           
           {/* Right side buttons */}
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-3">
             {/* Portfolio Link */}
             <a 
               href="http://localhost:3005" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="hidden md:block px-8 py-4 rounded-3xl text-xl font-medium transition-colors duration-200"
-              style={{ 
-                color: '#4B352A',
-                backgroundColor: 'rgba(75, 53, 42, 0.1)'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = '#CA7842';
-                e.currentTarget.style.color = '#F0F2BD';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'rgba(75, 53, 42, 0.1)';
-                e.currentTarget.style.color = '#4B352A';
-              }}
+              className="hidden md:block px-4 py-2 rounded-full text-sm font-medium text-neutral-600 hover:text-coral-500 hover:bg-coral-50 transition-all duration-200"
             >
               🎨 Portfolio
             </a>
             
             {/* Submit Recipe Button */}
             <Link to="/recipes/add">
-              <button 
-                className="px-8 py-4 rounded-3xl text-xl font-medium transition-colors duration-200"
-                style={{ 
-                  backgroundColor: '#CA7842',
-                  color: '#F0F2BD'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.backgroundColor = '#4B352A';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.backgroundColor = '#CA7842';
-                }}
-              >
+              <button className="px-6 py-3 rounded-full text-lg font-medium bg-coral-400 text-white hover:bg-coral-500 transition-all duration-200 shadow-md hover:shadow-lg">
                 ✍️ Submit Recipe
               </button>
             </Link>
@@ -106,11 +71,7 @@ export const Header = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-4 rounded-3xl transition-colors duration-200"
-              style={{ 
-                color: '#4B352A',
-                backgroundColor: 'rgba(75, 53, 42, 0.1)'
-              }}
+              className="md:hidden p-2 rounded-full text-neutral-600 hover:text-mint-500 hover:bg-mint-50 transition-all duration-200"
               aria-label="Toggle mobile menu"
             >
               <svg
@@ -140,42 +101,29 @@ export const Header = () => {
         
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div 
-            className="md:hidden border-t" 
-            style={{ 
-              borderColor: '#CA7842',
-              backgroundColor: '#F0F2BD'
-            }}
-          >
-            <div className="px-6 py-6 space-y-3">
+          <div className="md:hidden border-t border-neutral-200 bg-white">
+            <div className="px-6 py-4 space-y-2">
               {navItems.map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
                   onClick={closeMobileMenu}
-                  className={`block px-4 py-3 rounded-2xl text-lg font-medium transition-colors duration-200 ${
+                  className={`block px-4 py-3 rounded-full text-lg font-medium transition-all duration-200 ${
                     location.pathname === item.path 
-                      ? 'text-white' 
-                      : 'text-[#4B352A] hover:text-[#CA7842]'
+                      ? 'bg-mint-500 text-white' 
+                      : 'text-neutral-600 hover:text-mint-500 hover:bg-mint-50'
                   }`}
-                  style={{
-                    backgroundColor: location.pathname === item.path ? '#CA7842' : 'transparent'
-                  }}
                 >
                   {item.label}
                 </Link>
               ))}
-              <div className="pt-3 space-y-3">
+              <div className="pt-3 space-y-2">
                 <a 
                   href="http://localhost:3005" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   onClick={closeMobileMenu}
-                  className="block px-4 py-3 rounded-2xl text-lg font-medium transition-colors duration-200"
-                  style={{ 
-                    color: '#4B352A',
-                    backgroundColor: 'rgba(75, 53, 42, 0.1)'
-                  }}
+                  className="block px-4 py-3 rounded-full text-lg font-medium text-neutral-600 hover:text-coral-500 hover:bg-coral-50 transition-all duration-200"
                 >
                   🎨 Portfolio
                 </a>

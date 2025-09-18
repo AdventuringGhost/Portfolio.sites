@@ -20,13 +20,27 @@ export const Footer = () => {
             <SocialLinks className="text-gray-400" size="md" />
           </div>
           
+          {/* Contact Info */}
+          <div>
+            <h4 className="text-lg font-semibold mb-4 text-sunrise-yellow">Contact</h4>
+            <ul className="space-y-2 text-gray-300">
+              <li>hello@adventuringghost.com</li>
+              <li>Remote / Worldwide</li>
+              <li>Available for hire</li>
+            </ul>
+          </div>
+          
           {/* Quick Links */}
           <div>
-            <h4 className="text-lg font-semibold mb-4 text-sunrise-yellow">Quick Links</h4>
             <ul className="space-y-2">
               <li>
                 <Link to="/" className="text-gray-300 hover:text-sunrise-cyan transition-colors">
                   Home
+                </Link>
+              </li>
+              <li>
+                <Link to="/about" className="text-gray-300 hover:text-sunrise-cyan transition-colors">
+                  About
                 </Link>
               </li>
               <li>
@@ -54,16 +68,16 @@ export const Footer = () => {
                   Glow Grove ↗
                 </a>
               </li>
-            </ul>
-          </div>
-          
-          {/* Contact Info */}
-          <div>
-            <h4 className="text-lg font-semibold mb-4 text-sunrise-yellow">Contact</h4>
-            <ul className="space-y-2 text-gray-300">
-              <li>hello@adventuringghost.com</li>
-              <li>Remote / Worldwide</li>
-              <li>Available for hire</li>
+              <li>
+                <a 
+                  href="https://hike-harvest.com" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-sunrise-orange transition-colors"
+                >
+                  Hike Harvest ↗
+                </a>
+              </li>
             </ul>
           </div>
         </div>

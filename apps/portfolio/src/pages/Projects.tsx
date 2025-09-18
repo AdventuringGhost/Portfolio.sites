@@ -48,8 +48,8 @@ export const Projects = () => {
                     className="w-full h-48 object-cover"
                     onError={(e) => {
                       console.error('Failed to load image:', project.thumbnail)
-                      // Hide the image if it fails to load
-                      e.currentTarget.style.display = 'none'
+                      // Show a placeholder instead of hiding
+                      e.currentTarget.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCwgc2Fucy1zZXJpZiIgZm9udC1zaXplPSIxNCIgZmlsbD0iIzZiNzI4MCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkltYWdlIG5vdCBmb3VuZDwvdGV4dD48L3N2Zz4='
                     }}
                     onLoad={() => {
                       console.log('Successfully loaded image:', project.thumbnail)

@@ -3,10 +3,10 @@
 @import 'tailwindcss/utilities';
 
 :root {
-  --custom-green: #78C841;
-  --custom-cream: #B4E50D;
-  --custom-orange: #FF9B2F;
-  --custom-burgundy: #FB4141;
+  --custom-mint: #B1D690;
+  --custom-sunshine: #FEEC37;
+  --custom-coral: #FFA24C;
+  --custom-pink: #FF77B7;
 }
 
 @layer base {
@@ -74,6 +74,6 @@
   }
   
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-burgundy focus:border-transparent;
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-pink focus:border-transparent;
   }
 }
