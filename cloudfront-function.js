@@ -8,7 +8,8 @@ function handler(event) {
   }
   // Check whether the URI is missing a file extension.
   else if (!uri.includes(".")) {
-    request.uri += ".html";
+    // It's a directory-like path (e.g., /projects/nomad-net), add trailing slash and index.html
+    request.uri += "/index.html";
   }
 
   return request;

@@ -1,6 +1,5 @@
 import React from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { Card } from "./ui/Card";
 import { Badge } from "./ui/Badge";
 import { Button } from "./ui/Button";
@@ -62,7 +61,7 @@ export const ProjectCard = ({ project }: { project: Project }) => {
               ))}
           </div>
           {project.liveUrl ? (
-            <Link
+            <a
               href={project.liveUrl}
               target="_blank"
               rel="noopener noreferrer"
@@ -70,15 +69,15 @@ export const ProjectCard = ({ project }: { project: Project }) => {
             >
               View Live Site
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
+            </a>
           ) : (
-            <Link
+            <a
               href={internalHref}
               className="inline-flex items-center justify-center rounded-2xl font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed bg-[#F5DD61] text-gray-900 hover:bg-[#EACD52] focus:ring-[#F5DD61] shadow-lg hover:shadow-xl px-6 py-3 text-base w-full group mt-2"
             >
               {project.buttonText || "View Case Study"}
               <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-            </Link>
+            </a>
           )}
         </div>
       </div>
