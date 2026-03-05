@@ -1,0 +1,320 @@
+---
+title: "Glow Grove — Static Site on AWS (S3 + CloudFront)"
+description: "Static website on S3 with CloudFront CDN, Route 53 DNS, and ACM TLS. CI/CD planned via GitHub Actions."
+publishedAt: "2025-09-30"
+tags: ["AWS", "S3", "CloudFront", "Route 53", "ACM", "CI/CD"]
+---
+
+import Link from "next/link";
+import { Nav } from "@/components/Nav";
+import { Footer } from "@/components/Footer";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
+import { Section } from "@/components/ui/Section";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { siteContent } from "@/content/site";
+import { JsonLd } from "@/components/JsonLd";
+import { ExternalLink, Github, Download, ArrowLeft } from "lucide-react";
+
+export const metadata = {
+  title: "Glow Grove — Static Site on AWS (S3 + CloudFront)",
+  description:
+    "Static website hosted on Amazon S3 with CloudFront CDN, Route 53 DNS, ACM TLS, and a planned GitHub Actions CI/CD pipeline.",
+  alternates: { canonical: "https://adventuringghost.com/projects/glow-grove" },
+};
+
+export default function GlowGroveCaseStudy() {
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "AdventuringGhost Portfolio",
+    "url": "https://adventuringghost.com",
+    "description": "Cloud & DevOps Engineer Portfolio",
+    "author": {
+      "@type": "Person",
+      "name": "AdventuringGhost",
+      "url": "https://adventuringghost.com"
+    },
+    "breadcrumb": {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://adventuringghost.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Projects",
+          "item": "https://adventuringghost.com/projects"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "Glow Grove",
+          "item": "https://adventuringghost.com/projects/glow-grove"
+        }
+      ]
+    }
+  };
+
+return (
+<div className="min-h-screen bg-white">
+<JsonLd data={jsonLd} />
+<Nav navItems={siteContent.nav} />
+
+      <main className="pt-16">
+        {/* Project Header */}
+        <Section className="bg-gradient-to-br from-[#59D5E0]/10 to-[#F5DD61]/10">
+          <div className="max-w-4xl mx-auto">
+            <div className="mb-6">
+              <Link href="/projects" className="inline-flex items-center text-[#59D5E0] hover:text-[#4BC4CF] transition-colors">
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Projects
+              </Link>
+            </div>
+
+            <div className="mb-6">
+              <h1 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+                Glow Grove — Static Site on AWS (S3 + CloudFront)
+              </h1>
+
+              <div className="flex flex-wrap gap-2 mb-6">
+                <Badge variant="default">AWS S3</Badge>
+                <Badge variant="default">CloudFront</Badge>
+                <Badge variant="default">Route 53</Badge>
+                <Badge variant="default">ACM</Badge>
+                <Badge variant="default">CI/CD</Badge>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link href="https://glow-grove.com" target="_blank" rel="noopener noreferrer">
+                  <Button variant="primary" size="lg">
+                    <ExternalLink className="w-5 h-5 mr-2" />
+                    Live Site
+                  </Button>
+                </Link>
+                <Link href="https://github.com/adventuringghost/glow-grove" target="_blank" rel="noopener noreferrer">
+                  <Button variant="ghost" size="lg">
+                    <Github className="w-5 h-5 mr-2" />
+                    View Code
+                  </Button>
+                </Link>
+                <Link href="/pdf/glow-grove-case-study.pdf" target="_blank" rel="noopener noreferrer">
+                  <Button variant="ghost" size="lg">
+                    <Download className="w-5 h-5 mr-2" />
+                    Download PDF
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </Section>
+
+        {/* Executive Summary */}
+        <Section>
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Executive Summary</SectionHeading>
+            <Card>
+              <div className="p-6">
+                <p className="text-lg text-gray-700 mb-4">
+                  <strong>Objective:</strong> Launch a fast, reliable, and low-cost marketing site using <strong>serverless</strong> building blocks.
+                </p>
+                <p className="text-lg text-gray-700 mb-4">
+                  <strong>Outcome:</strong> Static site on <strong>Amazon S3</strong>, delivered globally via <strong>Amazon CloudFront</strong>, custom domain via <strong>Amazon Route 53</strong>, <strong>HTTPS</strong> via <strong>AWS Certificate Manager</strong>. Initial deploys are manual; <strong>GitHub Actions CI/CD</strong> is planned.
+                </p>
+                <div className="grid md:grid-cols-2 gap-4 mt-6">
+                  <div>
+                    <strong>Role:</strong> Cloud/DevOps + Frontend
+                  </div>
+                  <div>
+                    <strong>Stack:</strong> Next.js static export → S3 (origin), CloudFront (CDN), Route 53 (DNS), ACM (TLS)
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+        </Section>
+
+        {/* Architecture */}
+        <Section className="bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Architecture</SectionHeading>
+
+            <div className="mb-8">
+              <img
+                src="/diagram/glow-grove-arch.svg"
+                alt="Glow Grove S3 + CloudFront architecture showing user requests flowing through Route 53 DNS, CloudFront CDN, ACM SSL, to S3 static hosting, with planned GitHub Actions CI/CD deployment"
+                className="w-full h-auto rounded-xl shadow-lg"
+              />
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="min-w-full border-collapse border border-gray-300">
+                <thead>
+                  <tr>
+                    <th className="border border-gray-300 bg-gray-50 px-4 py-2 text-left font-semibold">Component</th>
+                    <th className="border border-gray-300 bg-gray-50 px-4 py-2 text-left font-semibold">Purpose</th>
+                    <th className="border border-gray-300 bg-gray-50 px-4 py-2 text-left font-semibold">Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2"><strong>S3 (website endpoint)</strong></td>
+                    <td className="border border-gray-300 px-4 py-2">Hosts static assets</td>
+                    <td className="border border-gray-300 px-4 py-2">Public website endpoint used for index/error behavior</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2"><strong>CloudFront</strong></td>
+                    <td className="border border-gray-300 px-4 py-2">Edge caching, TLS termination</td>
+                    <td className="border border-gray-300 px-4 py-2">Brotli/GZIP; cache policies per asset type</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2"><strong>Route 53</strong></td>
+                    <td className="border border-gray-300 px-4 py-2">DNS (A/AAAA alias)</td>
+                    <td className="border border-gray-300 px-4 py-2">Apex/root points to CloudFront distribution</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2"><strong>ACM (us-east-1)</strong></td>
+                    <td className="border border-gray-300 px-4 py-2">TLS certificate</td>
+                    <td className="border border-gray-300 px-4 py-2">Required region for CloudFront; covers apex and www</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-gray-300 px-4 py-2"><strong>GitHub Actions (planned)</strong></td>
+                    <td className="border border-gray-300 px-4 py-2">CI/CD pipeline</td>
+                    <td className="border border-gray-300 px-4 py-2">Build → export → s3 sync → CloudFront invalidation</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <blockquote className="border-l-4 border-[#59D5E0] pl-4 py-2 my-6 bg-gray-50 italic">
+              <strong>Registrar is GoDaddy.</strong> Nameservers updated to Route 53's NS set during launch.
+            </blockquote>
+
+            <h3>Why this design</h3>
+            <ul>
+              <li><strong>Performance/cost:</strong> static hosting + CDN = sub-second loads at cents/month.</li>
+              <li><strong>Simplicity:</strong> no servers to manage; clean rollback via static assets.</li>
+              <li><strong>Scalability:</strong> CloudFront handles global delivery.</li>
+            </ul>
+          </div>
+        </Section>
+
+        {/* Implementation */}
+        <Section>
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Implementation</SectionHeading>
+
+            <h3>Domain & DNS</h3>
+            <ul>
+              <li>Created Route 53 hosted zone for glow-grove.com.</li>
+              <li>Updated GoDaddy nameservers to Route 53 NS set (OTP flow).</li>
+              <li>Fixed early misrouting by changing apex <strong>A (alias)</strong> to the <strong>CloudFront distribution</strong> (not S3 URL).</li>
+            </ul>
+
+            <h3>TLS/HTTPS</h3>
+            <ul>
+              <li>Issued ACM certificate in <strong>us-east-1</strong> and attached to CloudFront.</li>
+              <li>Enforced HTTPS at the edge.</li>
+            </ul>
+
+            <h3>Hosting & CDN</h3>
+            <ul>
+              <li>Deployed static build to S3 bucket (website endpoint).</li>
+              <li>CloudFront caches assets globally.</li>
+              <li><em>If/when SPA routing is added:</em> map <strong>403/404 → /index.html</strong> in CloudFront custom error responses.</li>
+            </ul>
+
+            <h3>Current deploy (manual)</h3>
+            <pre className="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto my-6">
+
+{`# local build/export
+npm run build && npm run export
+
+# deploy to S3
+
+aws s3 sync out/ s3://glow-grove.com/ --delete
+
+# bust CDN cache
+
+aws cloudfront create-invalidation --distribution-id <DIST_ID> --paths "/\*"`}
+</pre>
+
+            <h3>Planned CI/CD (GitHub Actions)</h3>
+            <p>Trigger on merge to main: install → build → export → s3 sync → invalidate.</p>
+            <p>Use GitHub OIDC → AWS IAM role (least privilege) or scoped user.</p>
+          </div>
+        </Section>
+
+        {/* Decisions & Trade-offs */}
+        <Section className="bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Decisions & Trade-offs</SectionHeading>
+            <ul>
+              <li><strong>Static site (SSG)</strong> over dynamic: lowest ops/cost; trade-off = no server logic.</li>
+              <li><strong>CloudFront CDN</strong> for latency & TLS at edge; requires cache-busting (hashed filenames).</li>
+              <li><strong>S3 website endpoint</strong> origin: easy index/error behavior; if switching to private S3 + OAC, adjust origin and routing.</li>
+            </ul>
+          </div>
+        </Section>
+
+        {/* Challenges & Solutions */}
+        <Section>
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Challenges & Solutions</SectionHeading>
+            <ul>
+              <li><strong>A-record target confusion</strong> → Corrected to CloudFront alias (not S3 URL).</li>
+              <li><strong>Registrar verification friction</strong> → Completed OTP; confirmed NS propagation before ACM DNS validation.</li>
+              <li><strong>Cache freshness risk</strong> → Plan to use content-hashed assets; invalidate /* only for major releases.</li>
+              <li><strong>Deep links for SPA routes</strong> (anticipated) → CloudFront 403/404 → /index.html.</li>
+            </ul>
+          </div>
+        </Section>
+
+        {/* Operations & Monitoring */}
+        <Section className="bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Operations & Monitoring</SectionHeading>
+            <ul>
+              <li><strong>CloudFront metrics:</strong> requests, bytes, 4xx/5xx, cache hit ratio (CloudWatch).</li>
+              <li><strong>Budgets/alerts</strong> for S3/CloudFront spend thresholds.</li>
+              <li><strong>Uptime checks</strong> (UptimeRobot/StatusCake) for apex and www.</li>
+            </ul>
+          </div>
+        </Section>
+
+        {/* Results */}
+        <Section>
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Results (initial)</SectionHeading>
+            <ul>
+              <li>Launched late Sep 2025 with S3 + CloudFront.</li>
+              <li>Snappy edge delivery; Lighthouse tuning planned (image optimization + headers).</li>
+              <li>Cost profile: low single-digit USD/month at current traffic.</li>
+            </ul>
+          </div>
+        </Section>
+
+        {/* Roadmap */}
+        <Section className="bg-gray-50">
+          <div className="max-w-4xl mx-auto">
+            <SectionHeading level={2}>Roadmap</SectionHeading>
+            <ul>
+              <li>Add CI/CD (GitHub Actions + OIDC).</li>
+              <li>Enable hashed assets and selective invalidations.</li>
+              <li>Publish CloudWatch dashboard and uptime badge.</li>
+              <li>Migrate to private S3 + OAC when SPA routing stabilizes.</li>
+            </ul>
+          </div>
+        </Section>
+      </main>
+
+      <Footer links={siteContent.links} />
+    </div>
+
+);
+}

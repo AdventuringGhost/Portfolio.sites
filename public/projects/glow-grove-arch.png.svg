@@ -1,0 +1,123 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="awsGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF9900;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#FF6600;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cloudGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#59D5E0;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#F5DD61;stop-opacity:0.1" />
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="2" dy="2" stdDeviation="3" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="800" height="600" fill="url(#cloudGradient)"/>
+  
+  <!-- Title -->
+  <text x="400" y="30" text-anchor="middle" font-family="Arial, sans-serif" font-size="24" font-weight="bold" fill="#1f2937">
+    Glow Grove - AWS Static Site Architecture
+  </text>
+  
+  <!-- User/Internet -->
+  <g transform="translate(50, 80)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="#f3f4f6" stroke="#374151" stroke-width="2" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f2937">Users</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">Internet</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">glow-grove.com</text>
+  </g>
+  
+  <!-- Route 53 -->
+  <g transform="translate(200, 80)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="url(#awsGradient)" stroke="#FF6600" stroke-width="2" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" stroke="#000000" stroke-width="0.5">Route 53</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">DNS Service</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">A/AAAA Alias</text>
+  </g>
+  
+  <!-- CloudFront -->
+  <g transform="translate(350, 80)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="url(#awsGradient)" stroke="#FF6600" stroke-width="2" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" stroke="#000000" stroke-width="0.5">CloudFront</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">Global CDN</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">Edge Locations</text>
+  </g>
+  
+  <!-- ACM Certificate -->
+  <g transform="translate(500, 80)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="url(#awsGradient)" stroke="#FF6600" stroke-width="2" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" stroke="#000000" stroke-width="0.5">ACM</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">SSL/TLS</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">us-east-1</text>
+  </g>
+  
+  <!-- S3 Bucket -->
+  <g transform="translate(350, 250)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="url(#awsGradient)" stroke="#FF6600" stroke-width="2" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#ffffff" stroke="#000000" stroke-width="0.5">S3 Bucket</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">Static Website</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#ffffff" stroke="#000000" stroke-width="0.3">glow-grove.com</text>
+  </g>
+  
+  <!-- GitHub Actions (Planned) -->
+  <g transform="translate(50, 250)">
+    <rect x="0" y="0" width="120" height="80" rx="10" fill="#f9fafb" stroke="#374151" stroke-width="2" stroke-dasharray="5,5" filter="url(#shadow)"/>
+    <text x="60" y="25" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f2937">GitHub Actions</text>
+    <text x="60" y="45" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">CI/CD Pipeline</text>
+    <text x="60" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#374151">(Planned)</text>
+  </g>
+  
+  <!-- Arrows -->
+  <!-- User to Route 53 -->
+  <path d="M 170 120 L 200 120" stroke="#1f2937" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="185" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#1f2937">DNS Query</text>
+  
+  <!-- Route 53 to CloudFront -->
+  <path d="M 320 120 L 350 120" stroke="#1f2937" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="335" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#1f2937">A Record</text>
+  
+  <!-- CloudFront to ACM -->
+  <path d="M 470 120 L 500 120" stroke="#1f2937" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="485" y="115" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#1f2937">HTTPS</text>
+  
+  <!-- CloudFront to S3 -->
+  <path d="M 410 160 L 410 250" stroke="#1f2937" stroke-width="3" marker-end="url(#arrowhead)"/>
+  <text x="420" y="205" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#1f2937">Origin</text>
+  
+  <!-- GitHub Actions to S3 -->
+  <path d="M 170 290 L 350 290" stroke="#374151" stroke-width="3" stroke-dasharray="5,5" marker-end="url(#arrowhead)"/>
+  <text x="260" y="285" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="bold" fill="#374151">Deploy</text>
+  
+  <!-- Arrow marker definition -->
+  <defs>
+    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0, 10 3.5, 0 7" fill="#374151"/>
+    </marker>
+  </defs>
+  
+  <!-- Flow Labels -->
+  <g transform="translate(50, 400)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1f2937">Request Flow:</text>
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="13" fill="#1f2937">1. User requests glow-grove.com</text>
+    <text x="0" y="45" font-family="Arial, sans-serif" font-size="13" fill="#1f2937">2. Route 53 resolves DNS to CloudFront</text>
+    <text x="0" y="65" font-family="Arial, sans-serif" font-size="13" fill="#1f2937">3. CloudFront serves from edge or fetches from S3</text>
+    <text x="0" y="85" font-family="Arial, sans-serif" font-size="13" fill="#1f2937">4. ACM provides SSL/TLS encryption</text>
+  </g>
+  
+  <g transform="translate(400, 400)">
+    <text x="0" y="0" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#1f2937">Deployment Flow:</text>
+    <text x="0" y="25" font-family="Arial, sans-serif" font-size="13" fill="#374151">1. GitHub Actions builds static site</text>
+    <text x="0" y="45" font-family="Arial, sans-serif" font-size="13" fill="#374151">2. Syncs files to S3 bucket</text>
+    <text x="0" y="65" font-family="Arial, sans-serif" font-size="13" fill="#374151">3. Invalidates CloudFront cache</text>
+    <text x="0" y="85" font-family="Arial, sans-serif" font-size="13" fill="#374151">4. Global deployment complete</text>
+  </g>
+  
+  <!-- Key Features Box -->
+  <g transform="translate(50, 520)">
+    <rect x="0" y="0" width="700" height="60" rx="5" fill="#ffffff" stroke="#374151" stroke-width="2"/>
+    <text x="10" y="20" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#1f2937">Key Features:</text>
+    <text x="10" y="40" font-family="Arial, sans-serif" font-size="13" fill="#1f2937">• Global CDN with edge caching • Automatic SSL/TLS • Cost-effective static hosting • Planned CI/CD automation</text>
+  </g>
+</svg>
