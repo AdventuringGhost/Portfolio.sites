@@ -48,6 +48,7 @@ export const Button = ({
   // For asChild, clone the child element with button styles
   if (asChild && React.isValidElement(children)) {
     return React.cloneElement(children, {
+      ...props,
       className: cn(styleClasses, (children.props as any).className),
     } as any);
   }

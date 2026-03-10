@@ -47,16 +47,19 @@ export interface Project {
     summary: string;
     bullets: string[];
   };
+  problemImage?: string;
   solution?: {
     title: string;
     summary: string;
     bullets: string[];
   };
+  solutionImage?: string;
   outcome?: {
     title: string;
     summary: string;
     bullets: string[];
   };
+  outcomeImage?: string;
   codeSample?: {
     language: BundledLanguage;
     title: string;

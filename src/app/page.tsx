@@ -27,6 +27,11 @@ function ensureTrailingSlash(href: string) {
 }
 
 export default async function Home() {
+  const firstProject = siteContent.projects[0];
+  const heroPrimaryHref = firstProject
+    ? ensureTrailingSlash(`/projects/${firstProject.slug}`)
+    : ensureTrailingSlash(siteContent.hero.ctas.primary.href);
+
   return (
     <div className="min-h-screen bg-white">
       {/* Skip to content link for accessibility */}
@@ -49,11 +54,9 @@ export default async function Home() {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild size="lg" variant="secondary">
-                <Link
-                  href={ensureTrailingSlash(siteContent.hero.ctas.primary.href)}
-                >
+                <a href={heroPrimaryHref}>
                   {siteContent.hero.ctas.primary.text}
-                </Link>
+                </a>
               </Button>
               <Button asChild size="lg" variant="accent">
                 <Link

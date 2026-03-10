@@ -515,13 +515,14 @@ module "edge_node" {
       image: "/images/thesis.png",
       architecture: {
         description:
-          "My transition into Cloud Engineering is driven by the pursuit of true freedom through self-sustainability. I believe technology, stripped of its 'ivory tower' complexities, is the ultimate tool for community resilience. This thesis represents the technical methodology of that vision: Resilient, Human-Centric, and Free.",
+          "My transition into Cloud Engineering is driven by the pursuit of true freedom through self-sustainability. I believe technology, stripped of its 'ivory tower' complexities, is the ultimate tool for community resilience. This thesis represents the technical methodology of that vision: Resilient, Human-Centric, and Free. The visuals included were instrumental in helping me grasp the overall structure.",
         components: [
           "Builds on a philosophy of using technology for community resilience and autonomy.",
           "Connects technical work to a personal roadmap of creating a 'living laboratory' for off-grid tech and agriculture.",
           "Aims to create a blueprint for others, including graduating foster youth.",
         ],
       },
+      architectureImage: "/images/photo.two.jpg",
       problem: {
         title: "The 'Logic Ceiling' & The Limits of Predictive Models",
         summary:
@@ -542,6 +543,7 @@ module "edge_node" {
           "The HITL model leverages AI for the 'What' (e.g., generating boilerplate Terraform syntax) while the human provides the 'Why' (e.g., designing a resilient network topology).",
         ],
       },
+      solutionImage: "/images/photo.three.jpg",
       outcome: {
         title: "The Augmented Engineer & The Northern Blueprint",
         summary:
@@ -552,6 +554,7 @@ module "edge_node" {
           "Establishes a model for 'Blue-Collar Tech' that values pragmatic, resilient systems over clever, fragile ones.",
         ],
       },
+      outcomeImage: "/images/photo.four.jpg",
       learnings: [
         {
           category: "The Toolbox: An Interface Comparison",
@@ -604,6 +607,7 @@ module "edge_node" {
           },
         ],
       },
+      completionImage: "/images/photo.five.jpg",
     },
   ],
   skills: [
