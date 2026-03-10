@@ -38,6 +38,7 @@ export interface Project {
   buttonText?: string;
   image?: string;
   architectureImage?: string;
+  architectureImageCaption?: string;
   architecture?: {
     description: string;
     components: string[];
@@ -48,18 +49,21 @@ export interface Project {
     bullets: string[];
   };
   problemImage?: string;
+  problemImageCaption?: string;
   solution?: {
     title: string;
     summary: string;
     bullets: string[];
   };
   solutionImage?: string;
+  solutionImageCaption?: string;
   outcome?: {
     title: string;
     summary: string;
     bullets: string[];
   };
   outcomeImage?: string;
+  outcomeImageCaption?: string;
   codeSample?: {
     language: BundledLanguage;
     title: string;
@@ -78,6 +82,7 @@ export interface Project {
     milestones: Milestone[];
   };
   completionImage?: string;
+  completionImageCaption?: string;
 }
 
 export interface SiteContent {

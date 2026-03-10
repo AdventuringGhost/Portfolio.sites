@@ -109,6 +109,11 @@ type DetailItem = {
   data?: Partial<ProjectDetailSectionData>;
 };
 
+type DetailMedia = {
+  src?: string;
+  caption?: string;
+};
+
 /**
  * A type guard to ensure a project detail item has all the required data to be rendered.
  */
@@ -121,6 +126,38 @@ function isDetailItemValid(
     detail.data.summary &&
     Array.isArray(detail.data.bullets)
   );
+}
+
+function getDetailMedia(
+  type: string,
+  project: {
+    problemImage?: string;
+    problemImageCaption?: string;
+    solutionImage?: string;
+    solutionImageCaption?: string;
+    outcomeImage?: string;
+    outcomeImageCaption?: string;
+  },
+): DetailMedia {
+  if (type === "problem") {
+    return {
+      src: project.problemImage,
+      caption: project.problemImageCaption,
+    };
+  }
+  if (type === "solution") {
+    return {
+      src: project.solutionImage,
+      caption: project.solutionImageCaption,
+    };
+  }
+  if (type === "outcome") {
+    return {
+      src: project.outcomeImage,
+      caption: project.outcomeImageCaption,
+    };
+  }
+  return {};
 }
 
 export default async function ProjectPage({
@@ -229,8 +266,28 @@ export default async function ProjectPage({
               </DetailSection>
             </div>
 
+            {project.architectureImage && (
+              <Card className="p-4 mb-12">
+                <Image
+                  src={project.architectureImage}
+                  alt={`${project.title} architecture visual`}
+                  width={1200}
+                  height={700}
+                  className="w-full h-auto rounded-lg"
+                />
+                {project.architectureImageCaption && (
+                  <p className="text-sm text-gray-600 mt-3 italic">
+                    {project.architectureImageCaption}
+                  </p>
+                )}
+              </Card>
+            )}
+
             <div className="my-12 space-y-8">
-              {projectDetailsItems.filter(isDetailItemValid).map((detail) => (
+              {projectDetailsItems.filter(isDetailItemValid).map((detail) => {
+                const media = getDetailMedia(detail.type, project);
+
+                return (
                 <Card key={detail.type} className="p-6">
                   <SectionHeading level={3} className="text-xl mb-3">
                     {detail.data.title}
@@ -249,8 +306,25 @@ export default async function ProjectPage({
                       </li>
                     ))}
                   </ul>
+
+                  {media.src && (
+                    <div className="mt-6">
+                      <Image
+                        src={media.src}
+                        alt={`${detail.data.title} visual`}
+                        width={1200}
+                        height={700}
+                        className="w-full h-auto rounded-lg"
+                      />
+                      {media.caption && (
+                        <p className="text-sm text-gray-600 mt-3 italic">
+                          {media.caption}
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </Card>
-              ))}
+              );})}
             </div>
 
             {learningsContent}
@@ -291,6 +365,11 @@ export default async function ProjectPage({
                     height={800}
                     className="w-full h-auto rounded-lg"
                   />
+                  {project.completionImageCaption && (
+                    <p className="text-sm text-gray-600 mt-3 italic">
+                      {project.completionImageCaption}
+                    </p>
+                  )}
                 </Card>
               </div>
             )}

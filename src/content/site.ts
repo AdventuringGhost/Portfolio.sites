@@ -499,62 +499,67 @@ module "edge_node" {
     },
     {
       slug: "ai-thesis",
-      title:
-        "The Heuristic Implementation of AI in Distributed Systems Engineering",
-      tagline: "From Blue-Collar Foundations to Distributed Cloud Sovereignty",
+      title: "The Ghost in the Machine: Why AI is the New Currency of Intent",
+      tagline: "From capability stacks to agentic action in real-world work",
       cardVariant: "primary",
       summaryBullets: [
-        "AI as a 'power tool' resulted in a 400% increase in deployment velocity for related projects.",
-        "Identified a 'Logic Ceiling' where AI hallucinates complex configurations, requiring human intervention.",
-        "Proposes a 'Human-in-the-Loop' (HITL) framework where the human guides the 'Why' and the AI handles the 'What'.",
+        "Frames AI as a tiered capability stack: Deep Learning -> Gen AI -> Agentic AI.",
+        "Defines an AI agent as intent converted into action through memory, planning, and tool use.",
+        "Provides a practical learning path for professionals to start applying agentic workflows now.",
       ],
       buttonText: "Read more",
       stack: ["ChatGPT", "Gemini", "Cursor", "GitHub Copilot", "Research"],
       overview:
-        'This study demonstrates that AI is a high-precision power tool, not a replacement for expert engineers. Just as a nail gun makes a carpenter 10x faster, AI augments the operator by handling the manual labor of syntax and search, allowing the expert to focus on architecture and resilience. The core finding is that success in modern DevOps requires a "Human-in-the-Loop" (HITL) framework where the machine is used for the "What" (syntax) but relies on the human for the "Why" (resilience).',
+        "AI is no longer just a chatbot feature set. It is becoming the new currency of intent: the ability to convert what you mean into systems that act. This article reframes AI as a practical toolkit for both white-collar and blue-collar professionals, then outlines how to start applying agentic workflows in daily operations.",
       image: "/images/thesis.png",
       architecture: {
         description:
-          "My transition into Cloud Engineering is driven by the pursuit of true freedom through self-sustainability. I believe technology, stripped of its 'ivory tower' complexities, is the ultimate tool for community resilience. This thesis represents the technical methodology of that vision: Resilient, Human-Centric, and Free. The visuals included were instrumental in helping me grasp the overall structure.",
+          "To spend this new currency effectively, we have to understand what AI actually is: not a magic trick, but a stack of capabilities that progresses from models to action.",
         components: [
-          "Builds on a philosophy of using technology for community resilience and autonomy.",
-          "Connects technical work to a personal roadmap of creating a 'living laboratory' for off-grid tech and agriculture.",
-          "Aims to create a blueprint for others, including graduating foster youth.",
+          "As shown in the framework, the field has moved from Deep Learning foundations to Gen AI creation and now to Agentic AI execution.",
+          "For white-collar professionals, this shifts work from one-off assistance to AI-managed workflows such as scheduling and coordination.",
+          "For blue-collar professionals, this points to autonomous equipment that can detect pests, adapt to soil conditions, and execute tasks in real time.",
         ],
       },
       architectureImage: "/images/photo.two.jpg",
+      architectureImageCaption:
+        "Figure 1: The AI Evolution. From deep learning foundations to Gen AI capabilities, leading to Agentic AI systems capable of complex action.",
       problem: {
-        title: "The 'Logic Ceiling' & The Limits of Predictive Models",
+        title: "2. The Anatomy of an Agent",
         summary:
-          "The primary challenge identified is the 'Logic Ceiling'—the threshold where an AI's predictive pattern-matching capabilities are superseded by empirical, real-world truth. AI models can hallucinate configurations for complex, novel problems.",
+          "If AI is the currency, the AI agent is the transaction. The key shift happens when a system moves from interpreting your request to planning and executing action.",
         bullets: [
-          "During the Nomad Edge deployment, AI models incorrectly predicted 'Auto-Propagation' of routes for a manual Cross-Region VPC Peering setup in AWS.",
-          "AI prioritizes statistically likely patterns over documented truth, leading to confident but incorrect assertions for edge-case scenarios.",
-          'AI models often work with outdated information, described as "a fast runner on a map that is sometimes 12 months out of date."',
+          "An effective agent combines perception, reasoning, memory, and tool use in a continuous loop.",
+          "Memory allows context retention across tasks, from farm history to client histories and project constraints.",
+          "In the Nomad Edge and Nomad-Net work, this appears as systems that can plan steps, call tools, and adapt based on feedback.",
         ],
       },
+      problemImage: "/images/photo.three.jpg",
+      problemImageCaption:
+        "Figure 2: The Agentic Loop. An agent is a synthesis of Perception, Brain (reasoning/memory), and the ability to use specific tools.",
       solution: {
-        title: "The Manual Pivot: A Human-in-the-Loop (HITL) Framework",
+        title: "3. Human Will in the Loop",
         summary:
-          "The resolution required a complete bypass of the AI's flawed logic. The proposed solution is a formal Human-in-the-Loop (HITL) framework where the engineer acts as the navigator.",
+          "Human judgment remains the anchor. The most reliable operating model is still Human-in-the-Loop (HITL), where AI accelerates execution while humans define direction, risk boundaries, and final accountability.",
         bullets: [
-          "Pivoted to manual research, sourcing 'Ground Truth' from primary sources like GitHub Issues and AWS Knowledge Center logs.",
-          "The engineer's role shifts from 'typist' to 'strategist,' using AI for speed on known tasks and their own expertise for navigating novel challenges.",
-          "The HITL model leverages AI for the 'What' (e.g., generating boilerplate Terraform syntax) while the human provides the 'Why' (e.g., designing a resilient network topology).",
+          "Use AI for the What: drafting, summarizing, and boilerplate acceleration.",
+          "Keep humans on the Why: architecture decisions, safety, and trade-off selection.",
+          "Treat AI as a power tool that multiplies skilled labor rather than replacing expertise.",
         ],
       },
-      solutionImage: "/images/photo.three.jpg",
       outcome: {
-        title: "The Augmented Engineer & The Northern Blueprint",
+        title: "4. How to Start Spending This Currency",
         summary:
-          "The thesis concludes that the most effective modern engineer is an 'Augmented Engineer' who treats AI as a pragmatic tool, much like a carpenter uses a CNC machine for precision cuts to focus on custom joinery. This philosophy extends to a replicable 'Digital Seed' for remote communities.",
+          "The barrier to entry has never been lower. You do not need a PhD to start applying AI in your trade or office, but you do need a practical sequence for learning and deployment.",
         bullets: [
-          "A 400% increase in deployment velocity was observed in the Nomad Edge project by using AI for toil and manual work.",
-          "The framework provides a blueprint for deploying localized 'Knowledge Hubs' in Northern and Indigenous communities that do not rely on fragile southern infrastructure.",
-          "Establishes a model for 'Blue-Collar Tech' that values pragmatic, resilient systems over clever, fragile ones.",
+          "Start with core concepts, then move into applied agent workflows and tool orchestration.",
+          "Use structured projects to bridge theory into repeatable execution patterns.",
+          "Follow a curated roadmap of essential resources to build practical competence in deploying AI agents in 2026.",
         ],
       },
-      outcomeImage: "/images/photo.four.jpg",
+      outcomeImage: "/images/photo.five.jpg",
+      outcomeImageCaption:
+        "Figure 3: A Learning Path. A curated set of essential resources for mastering practical AI-agent deployment in 2026.",
       learnings: [
         {
           category: "The Toolbox: An Interface Comparison",
@@ -568,14 +573,19 @@ module "edge_node" {
         {
           category: "References",
           points: [
-            "Amazon Web Services (AWS). (2025). VPC Peering Routing Documentation. AWS Knowledge Center.",
             "Bender, E. M., et al. (2021). On the Dangers of Stochastic Parrots. ACM Conference on Fairness, Accountability, and Transparency.",
-            "Beyer, B., et al. (2016). Site Reliability Engineering. O'Reilly Media.",
-            "Department of Defense (DoD). (2021). Dictionary of Military and Associated Terms. Joint Publication 1-02.",
             "Google. (2024). Gemini: A Family of Highly Capable Multimodal Models. Technical Report.",
             "IBM. (2023). The Quantified Value of Human-in-the-loop AI. IBM Institute for Business Value.",
-            "OpenAI. (2024). Model Capabilities and Limitations. Technical Documentation.",
+            "ISO/IEC 42001. (2023). Information technology - Artificial intelligence - Management system.",
+            "LangChain. (2026). LangChain and LangGraph Documentation.",
+            "Microsoft. (2023). AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.",
+            "NIST. (2023). AI Risk Management Framework (AI RMF 1.0).",
+            "OpenAI. (2023). GPT-4 Technical Report.",
+            "OpenAI. (2026). API Documentation for Tool Use and Agent Workflows.",
             "Pan, Y. (2016). Heading toward Artificial Intelligence 2.0. Engineering, 2(4).",
+            "Schick, T., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. NeurIPS.",
+            "Wang, G., et al. (2023). Voyager: An Open-Ended Embodied Agent with Large Language Models.",
+            "Yao, S., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models.",
             "Schlosser, K. (2026). The Nomad Edge Project: A Case Study in Distributed Resilience. Portfolio Research.",
             "Zanzotto, F. M. (2020). Human-in-the-loop Artificial Intelligence. IEEE Intelligent Systems.",
           ],
@@ -607,7 +617,6 @@ module "edge_node" {
           },
         ],
       },
-      completionImage: "/images/photo.five.jpg",
     },
   ],
   skills: [
