@@ -2,13 +2,13 @@ import type { SiteContent } from "./types";
 
 export const siteContent: SiteContent = {
   hero: {
-    title: "Nomad Edge — SCDC DevOps Case Study",
+    title: "Azure Gmail Email Agent — DevSecOps Case Study",
     subtitle:
-      "Building digital systems with ancestral resilience: Métis innovation for the rural edge.",
+      "Production-grade AI email automation on Azure: identity-based auth, full IaC, and Claude Sonnet 4.6 — for $1.50.",
     ctas: {
       primary: {
-        text: "Read the Nomad Edge Case Study",
-        href: "/projects/nomad-edge",
+        text: "Read the Case Study",
+        href: "/projects/azure-email-agent",
       },
       secondary: {
         text: "Resume PDF",
@@ -24,186 +24,10 @@ export const siteContent: SiteContent = {
   certs: [],
   projects: [
     {
-      slug: "nomad-edge",
-      title: "Nomad Edge — SCDC Edge Platform (Hero Case Study)",
-      tagline:
-        "Single Cluster, Distant Client (SCDC) architecture for resilient, rural-first operations using Nomad, Terraform, Packer, and Node.js.",
-      cardVariant: "accent",
-      summaryBullets: [
-        "Production-grade Nomad Edge platform using Nomad, Terraform, Packer, and Node.js",
-        "Implements the Single Cluster, Distant Client (SCDC) model for rural and remote sites",
-        "Automates the full lifecycle from image bake to deployment and monitoring",
-        "Managed as a living project with Linear milestones, tickets, and post-incident reviews",
-      ],
-      stack: [
-        "HashiCorp Nomad",
-        "Terraform",
-        "Packer",
-        "Node.js",
-        "AWS",
-        "Linear",
-      ],
-      codeUrl: "https://github.com/AdventuringGhost/nomad-edge-factory",
-      architectureImage: "/diagram/nomad-edge-arch.png",
-      overview:
-        "The Hero project. Nomad Edge is a production-grade SCDC platform that takes workloads from Terraform module to Packer image to Nomad deployment, with telemetry and incident workflows managed in Linear.",
-      architecture: {
-        description:
-          "In the cloud (us-east-1), a three-node Nomad server cluster — The Brain — runs inside a hardened VPC. At the edge, Nomad clients — The Sentry nodes — run Node.js sensors in local zones or remote sites. A secure VPN/WireGuard bridge connects the two, so distant clients can keep working when the link is flaky and reconcile when it returns.",
-        components: [
-          "Three Nomad servers (The Brain) in us-east-1 for high availability and consistent scheduling",
-          "Nomad clients (The Sentry nodes) at remote sites running Node.js sensor workloads",
-          "Terraform modules defining VPC, subnets, security groups, and Nomad cluster topology",
-          "Packer pipelines baking immutable AMIs for rural edge nodes",
-          "VPN or WireGuard bridge providing secure, resilient connectivity between cloud and edge",
-        ],
-      },
-      problem: {
-        title: "Problem",
-        summary:
-          "Field teams in rural and remote areas need consistent access to critical tools, but bandwidth is limited, latency is high, and connectivity drops unexpectedly.",
-        bullets: [
-          "Centralised, cloud-only systems fail hard when the network does.",
-          "Manual configuration of edge devices makes scale and recovery slow.",
-          "Operations teams need observability into distant sites without constant SSH access.",
-        ],
-      },
-      solution: {
-        title: "Solution",
-        summary:
-          "Use a Single Cluster, Distant Client (SCDC) model with Nomad as orchestrator, backed by Terraform and Packer, and Node.js services designed to tolerate network partitions.",
-        bullets: [
-          "Run a hardened Nomad control plane in the cloud as the single source of scheduling truth.",
-          "Attach distant edge clients over secure tunnels with retry-friendly configurations.",
-          "Push offline-capable Node.js workloads to the edge so work continues when the link drops.",
-        ],
-      },
-      outcome: {
-        title: "Outcome",
-        summary:
-          "Nomad Edge turns fragile rural links into a tolerable constraint instead of a blocker, giving teams consistent tools and operators clear visibility.",
-        bullets: [
-          "Edge workers can continue operating while offline and reconcile state when connectivity returns.",
-          "New sites can be brought online with a small Terraform change and a Packer-built image.",
-          "Operators gain a single pane of glass for workload health across distant clients.",
-        ],
-      },
-      codeSample: {
-        language: "hcl",
-        title: "Terraform – Resilient Nomad Edge node (rural Saskatchewan)",
-        snippet: `
-# Example Terraform: Defining a Resilient Edge Node for Nomad Edge
-
-module "edge_node" {
-  source = "./modules/nomad-client"
-
-  region        = "ca-central-1" # Saskatchewan-focused
-  instance_type = "t3.medium"
-  ami_id       = var.packer_baked_ami # Immutable image from Packer
-
-  # Ensure the node stays alive even if the link to the core fluctuates
-  nomad_client_config = {
-    client_max_kill_timeout = "24h"
-    node_class              = "rural-edge"
-  }
-}
-      `.trim(),
-      },
-      learnings: [
-        {
-          category: "Key Decisions & Learnings",
-          points: [
-            "Adopted an SCDC Topology to centralise control while keeping remote sites operational during network partitions, reducing operational overhead.",
-            "Standardised on Immutable Edge Nodes using Packer, which lowers Mean Time To Recovery (MTTR) and reduces the need for on-site expertise.",
-            "Codified all resources using Infrastructure as Code (Terraform) to make changes reviewable, auditable, and reproducible.",
-            "Structured services to be Offline-first, using local persistence and periodic syncs to tolerate flaky upstream network links.",
-          ],
-        },
-      ],
-      monitoring: [
-        {
-          title: "Cluster Health",
-          description:
-            "Dashboards for Nomad server and client health, allocation status, and edge node connectivity, with alerts on job failures and node flaps.",
-        },
-        {
-          title: "Edge Telemetry",
-          description:
-            "Node.js services emit structured logs and metrics from distant clients so rural deployments can be observed without constant SSH access.",
-        },
-        {
-          title: "Cost & Capacity",
-          description:
-            "Terraform-managed tagging plus cloud-native metrics to understand per-site capacity, cost, and utilisation trends as more clients are added.",
-          visual: "cost-analysis",
-        },
-      ],
-      roadmap: {
-        milestones: [
-          {
-            id: "m2",
-            label: "The Nervous System",
-            status: "Complete",
-            progress: 100,
-            summary:
-              "Solidified the telemetry and edge intake path so that remote sites can report in reliably, even when the network behaves badly.",
-            tickets: [
-              {
-                key: "NE-101",
-                title: "Terraform Base Infrastructure",
-                finishingComment:
-                  "Laid the foundation: VPCs, subnets, security groups, and Nomad server cluster topology defined as reusable Terraform modules. This became the single source of truth for all Nomad Edge environments.",
-              },
-              {
-                key: "NE-102",
-                title: "Packer Image Pipeline",
-                finishingComment:
-                  "Built the Packer pipeline that bakes Nomad client, Node.js runtime, and baseline observability into immutable AMIs. Edge nodes now boot consistent and join cleanly.",
-              },
-              {
-                key: "NE-103",
-                title: "Nomad Cluster Bootstrap",
-                finishingComment:
-                  "Configured the three-node Nomad server cluster (The Brain) in us-east-1 with proper quorum, Raft consensus, and high-availability networking. The control plane is hardened and ready for distant clients.",
-              },
-              {
-                key: "NE-104",
-                title: "VPN/WireGuard Bridge",
-                finishingComment:
-                  "Set up secure tunnels between cloud and edge with aggressive retry logic and keepalives. The bridge tolerates flaky links and reconnects gracefully when connectivity returns.",
-              },
-            ],
-          },
-          {
-            id: "m3",
-            label: "The Brain",
-            status: "Complete",
-            progress: 100,
-            summary:
-              "Turning raw telemetry into decisions, history, and alerts by layering analysis and storage on top of the Nomad Edge stream.",
-            tickets: [
-              {
-                key: "NE-201",
-                title: "The Analyst",
-                finishingComment:
-                  "Designing streaming analysis that prefers clear, explainable thresholds over clever magic. After enough high-pressure incidents, boring and reliable wins.",
-              },
-              {
-                key: "NE-202",
-                title: "The Historian",
-                finishingComment:
-                  "Building a history layer that keeps a truthful record of rural outages and recoveries so we can spot patterns, not just fight fires one at a time.",
-              },
-            ],
-          },
-        ],
-      },
-    },
-    {
       slug: "azure-email-agent",
       title: "Azure Gmail Email Agent",
       tagline: "A DevSecOps case study — AI-powered email automation on Azure for $1.50",
-      cardVariant: "secondary",
+      cardVariant: "accent",
       summaryBullets: [
         "AI email agent on Azure VM — classifies, drafts, and sends replies automatically using Claude Sonnet 4.6",
         "Zero secrets in source control: all credentials fetched at runtime from Azure Key Vault via managed identity",
@@ -267,7 +91,7 @@ module "edge_node" {
       outcome: {
         title: "Outcome",
         summary:
-          "A fully working AI email agent proven end-to-end, with the complete IaC lifecycle demonstrated via screen-recorded rebuild from zero.",
+          "A fully working AI email agent proven end-to-end, with the complete IaC lifecycle demonstrated from deploy through destroy.",
         bullets: [
           "Fully working AI email agent — polls, classifies, drafts, and sends replies automatically.",
           "Complete IaC lifecycle demonstrated: deploy, prove, destroy, and rebuild from zero.",
@@ -304,7 +128,7 @@ module "edge_node" {
         {
           category: "Infrastructure as Code",
           points: [
-            "Terraform one-command deploy and destroy proved true reproducibility — the rebuild-from-zero screen recording is the evidence.",
+            "Terraform one-command deploy and destroy proved true reproducibility — the ability to rebuild from zero is the evidence.",
             "A three-stage Azure DevOps pipeline with a manual approval gate before apply mirrors production change management at zero cost.",
             "Tagging all resources in Terraform made cost attribution and cleanup trivial.",
           ],
@@ -455,6 +279,182 @@ module "edge_node" {
                 title: "Portfolio Entry",
                 finishingComment:
                   "Case study content complete. Publishing to portfolio site now.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
+      slug: "nomad-edge",
+      title: "Nomad Edge — SCDC Edge Platform",
+      tagline:
+        "Single Cluster, Distant Client (SCDC) architecture for resilient, rural-first operations using Nomad, Terraform, Packer, and Node.js.",
+      cardVariant: "primary",
+      summaryBullets: [
+        "Production-grade Nomad Edge platform using Nomad, Terraform, Packer, and Node.js",
+        "Implements the Single Cluster, Distant Client (SCDC) model for rural and remote sites",
+        "Automates the full lifecycle from image bake to deployment and monitoring",
+        "Managed as a living project with Linear milestones, tickets, and post-incident reviews",
+      ],
+      stack: [
+        "HashiCorp Nomad",
+        "Terraform",
+        "Packer",
+        "Node.js",
+        "AWS",
+        "Linear",
+      ],
+      codeUrl: "https://github.com/AdventuringGhost/nomad-edge-factory",
+      architectureImage: "/diagram/nomad-edge-arch.png",
+      overview:
+        "Nomad Edge is a production-grade SCDC platform that takes workloads from Terraform module to Packer image to Nomad deployment, with telemetry and incident workflows managed in Linear.",
+      architecture: {
+        description:
+          "In the cloud (us-east-1), a three-node Nomad server cluster — The Brain — runs inside a hardened VPC. At the edge, Nomad clients — The Sentry nodes — run Node.js sensors in local zones or remote sites. A secure VPN/WireGuard bridge connects the two, so distant clients can keep working when the link is flaky and reconcile when it returns.",
+        components: [
+          "Three Nomad servers (The Brain) in us-east-1 for high availability and consistent scheduling",
+          "Nomad clients (The Sentry nodes) at remote sites running Node.js sensor workloads",
+          "Terraform modules defining VPC, subnets, security groups, and Nomad cluster topology",
+          "Packer pipelines baking immutable AMIs for rural edge nodes",
+          "VPN or WireGuard bridge providing secure, resilient connectivity between cloud and edge",
+        ],
+      },
+      problem: {
+        title: "Problem",
+        summary:
+          "Field teams in rural and remote areas need consistent access to critical tools, but bandwidth is limited, latency is high, and connectivity drops unexpectedly.",
+        bullets: [
+          "Centralised, cloud-only systems fail hard when the network does.",
+          "Manual configuration of edge devices makes scale and recovery slow.",
+          "Operations teams need observability into distant sites without constant SSH access.",
+        ],
+      },
+      solution: {
+        title: "Solution",
+        summary:
+          "Use a Single Cluster, Distant Client (SCDC) model with Nomad as orchestrator, backed by Terraform and Packer, and Node.js services designed to tolerate network partitions.",
+        bullets: [
+          "Run a hardened Nomad control plane in the cloud as the single source of scheduling truth.",
+          "Attach distant edge clients over secure tunnels with retry-friendly configurations.",
+          "Push offline-capable Node.js workloads to the edge so work continues when the link drops.",
+        ],
+      },
+      outcome: {
+        title: "Outcome",
+        summary:
+          "Nomad Edge turns fragile rural links into a tolerable constraint instead of a blocker, giving teams consistent tools and operators clear visibility.",
+        bullets: [
+          "Edge workers can continue operating while offline and reconcile state when connectivity returns.",
+          "New sites can be brought online with a small Terraform change and a Packer-built image.",
+          "Operators gain a single pane of glass for workload health across distant clients.",
+        ],
+      },
+      codeSample: {
+        language: "hcl",
+        title: "Terraform – Resilient Nomad Edge node (rural Saskatchewan)",
+        snippet: `
+# Example Terraform: Defining a Resilient Edge Node for Nomad Edge
+
+module "edge_node" {
+  source = "./modules/nomad-client"
+
+  region        = "ca-central-1" # Saskatchewan-focused
+  instance_type = "t3.medium"
+  ami_id       = var.packer_baked_ami # Immutable image from Packer
+
+  # Ensure the node stays alive even if the link to the core fluctuates
+  nomad_client_config = {
+    client_max_kill_timeout = "24h"
+    node_class              = "rural-edge"
+  }
+}
+      `.trim(),
+      },
+      learnings: [
+        {
+          category: "Key Decisions & Learnings",
+          points: [
+            "Adopted an SCDC Topology to centralise control while keeping remote sites operational during network partitions, reducing operational overhead.",
+            "Standardised on Immutable Edge Nodes using Packer, which lowers Mean Time To Recovery (MTTR) and reduces the need for on-site expertise.",
+            "Codified all resources using Infrastructure as Code (Terraform) to make changes reviewable, auditable, and reproducible.",
+            "Structured services to be Offline-first, using local persistence and periodic syncs to tolerate flaky upstream network links.",
+          ],
+        },
+      ],
+      monitoring: [
+        {
+          title: "Cluster Health",
+          description:
+            "Dashboards for Nomad server and client health, allocation status, and edge node connectivity, with alerts on job failures and node flaps.",
+        },
+        {
+          title: "Edge Telemetry",
+          description:
+            "Node.js services emit structured logs and metrics from distant clients so rural deployments can be observed without constant SSH access.",
+        },
+        {
+          title: "Cost & Capacity",
+          description:
+            "Terraform-managed tagging plus cloud-native metrics to understand per-site capacity, cost, and utilisation trends as more clients are added.",
+          visual: "cost-analysis",
+        },
+      ],
+      roadmap: {
+        milestones: [
+          {
+            id: "m2",
+            label: "The Nervous System",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Solidified the telemetry and edge intake path so that remote sites can report in reliably, even when the network behaves badly.",
+            tickets: [
+              {
+                key: "NE-101",
+                title: "Terraform Base Infrastructure",
+                finishingComment:
+                  "Laid the foundation: VPCs, subnets, security groups, and Nomad server cluster topology defined as reusable Terraform modules. This became the single source of truth for all Nomad Edge environments.",
+              },
+              {
+                key: "NE-102",
+                title: "Packer Image Pipeline",
+                finishingComment:
+                  "Built the Packer pipeline that bakes Nomad client, Node.js runtime, and baseline observability into immutable AMIs. Edge nodes now boot consistent and join cleanly.",
+              },
+              {
+                key: "NE-103",
+                title: "Nomad Cluster Bootstrap",
+                finishingComment:
+                  "Configured the three-node Nomad server cluster (The Brain) in us-east-1 with proper quorum, Raft consensus, and high-availability networking. The control plane is hardened and ready for distant clients.",
+              },
+              {
+                key: "NE-104",
+                title: "VPN/WireGuard Bridge",
+                finishingComment:
+                  "Set up secure tunnels between cloud and edge with aggressive retry logic and keepalives. The bridge tolerates flaky links and reconnects gracefully when connectivity returns.",
+              },
+            ],
+          },
+          {
+            id: "m3",
+            label: "The Brain",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Turning raw telemetry into decisions, history, and alerts by layering analysis and storage on top of the Nomad Edge stream.",
+            tickets: [
+              {
+                key: "NE-201",
+                title: "The Analyst",
+                finishingComment:
+                  "Designing streaming analysis that prefers clear, explainable thresholds over clever magic. After enough high-pressure incidents, boring and reliable wins.",
+              },
+              {
+                key: "NE-202",
+                title: "The Historian",
+                finishingComment:
+                  "Building a history layer that keeps a truthful record of rural outages and recoveries so we can spot patterns, not just fight fires one at a time.",
               },
             ],
           },
@@ -644,15 +644,15 @@ module "edge_node" {
       title: "Glow Grove — Static Site on AWS (S3 + CloudFront)",
       cardVariant: "secondary",
       summaryBullets: [
-        "Built an ultra‑low‑cost marketing site delivered via S3 origin + CloudFront CDN.",
-        "Custom domain and TLS handled by Route 53 and ACM (us-east-1).",
+        "Built an ultra€‘low€‘cost marketing site delivered via S3 origin + CloudFront CDN.",
+        "Custom domain and TLS handled by RouteÂ 53 and ACM (us-east-1).",
         "Deployment currently manual; GitHub Actions CI/CD planned.",
       ],
       stack: ["Next.js", "AWS S3", "CloudFront", "Route 53", "ACM"],
       codeUrl: "https://github.com/adventuringghost/glow-grove",
       liveUrl: "https://glow-grove.com/",
       overview:
-        "Static site exported from Next.js and hosted on Amazon S3 with CloudFront CDN, Route 53 DNS, and ACM TLS.",
+        "Static site exported from Next.js and hosted on Amazon S3 with CloudFront CDN, RouteÂ 53 DNS, and ACM TLS.",
       image: "/images/glow-grove-visual.png",
     },
     {
@@ -935,7 +935,7 @@ module "edge_node" {
   },
   about: {
     content:
-      "I'm a Métis Cloud & DevOps engineer focused on resilient, rural-first infrastructure. My work is about more than clusters and pipelines; it's about keeping people online when they are hours away from the nearest city. I use cloud platforms, Nomad, Terraform, and automation as tools to solve human problems for the agricultural and rural communities I come from, with a bias toward calm, reliable systems over clever, fragile ones.",
+      "I'm a MÃ©tis Cloud & DevOps engineer focused on resilient, rural-first infrastructure. My work is about more than clusters and pipelines; it's about keeping people online when they are hours away from the nearest city. I use cloud platforms, Nomad, Terraform, and automation as tools to solve human problems for the agricultural and rural communities I come from, with a bias toward calm, reliable systems over clever, fragile ones.",
     profileImage: "/images/portfolio-photo.jpg",
     profileImageAlt: "A photo of the author, AdventuringGhost.",
   },
