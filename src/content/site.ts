@@ -200,6 +200,268 @@ module "edge_node" {
       },
     },
     {
+      slug: "azure-email-agent",
+      title: "Azure Gmail Email Agent",
+      tagline: "A DevSecOps case study — AI-powered email automation on Azure for $1.50",
+      cardVariant: "secondary",
+      summaryBullets: [
+        "AI email agent on Azure VM — classifies, drafts, and sends replies automatically using Claude Sonnet 4.6",
+        "Zero secrets in source control: all credentials fetched at runtime from Azure Key Vault via managed identity",
+        "Full IaC lifecycle with Terraform — deploy, prove, destroy, and rebuild from zero in one command",
+        "Total Azure cloud spend across all sessions: ~$1.50",
+      ],
+      stack: [
+        "Python",
+        "Terraform",
+        "Azure VM",
+        "Azure Key Vault",
+        "Azure Log Analytics",
+        "Azure DevOps",
+        "Anthropic Claude Sonnet 4.6",
+        "Gmail API",
+        "OAuth 2.0",
+      ],
+      codeUrl: "https://github.com/AdventuringGhost/azure-email-agent",
+      overview:
+        "A production-grade AI email agent deployed on Azure that polls Gmail every 60 seconds, classifies each email as urgent, routine, or spam using Claude Sonnet 4.6, drafts a contextual reply, and sends it automatically. Built to demonstrate DevSecOps fundamentals: identity-based auth, secrets management, full IaC, and CI/CD — all under $2 in cloud spend.",
+      architectureImage: "/images/email-agent-azure-portal.png",
+      architectureImageCaption:
+        "Azure Portal — rg-azure-email-agent resource group showing all 6 resources: Key Vault, Log Analytics workspace, Network Interface, Virtual Machine, Disk, and Virtual Network.",
+      architecture: {
+        description:
+          "The agent runs on an Azure VM with a system-assigned managed identity, eliminating stored credentials entirely. Secrets are fetched from Azure Key Vault at runtime via RBAC. Gmail is polled on a 60-second loop, Claude Sonnet classifies and drafts each reply, and the result is sent back through the Gmail API. All infrastructure is defined in Terraform and deployed through a three-stage Azure DevOps pipeline with a manual approval gate before apply.",
+        components: [
+          "Azure VM (Ubuntu 22.04) with system-assigned managed identity as the agent runtime",
+          "Azure Key Vault in RBAC mode — stores Gmail OAuth tokens and API keys, no hardcoded secrets",
+          "Azure Log Analytics workspace for structured observability and agent telemetry",
+          "Anthropic Claude Sonnet 4.6 via API — classifies emails and generates contextual draft replies",
+          "Gmail API with OAuth 2.0 for polling inbox and sending automated responses",
+          "Terraform managing the full stack — VNet, VM, Key Vault, Log Analytics — deployed and destroyed in one command",
+          "Azure DevOps three-stage pipeline: plan → manual approval gate → apply",
+        ],
+      },
+      problem: {
+        title: "Problem",
+        summary:
+          "Managing email volume manually is time-consuming and error-prone. The real challenge was building an automated solution that meets production-grade security standards — no secrets in code, no public IP, identity-based auth, full IaC — while keeping total cloud spend under $2.",
+        bullets: [
+          "Email classification and reply drafting is repetitive cognitive work that scales poorly with volume.",
+          "Most automation tutorials skip production security: secrets in .env files, public IPs, no audit trail.",
+          "Proving a system is reproducible requires destroying it and rebuilding from zero — not just deploying once.",
+        ],
+      },
+      solution: {
+        title: "Solution",
+        summary:
+          "A Python agent deployed on Azure VM that polls Gmail, uses Claude Sonnet 4.6 to classify and draft replies, and sends them automatically — with every secret managed via Azure Key Vault and managed identity, never touching source control.",
+        bullets: [
+          "60-second Gmail poll loop — classifies each email as urgent, routine, or spam using Claude Sonnet 4.6.",
+          "Contextual reply drafting: Claude generates replies based on email content with a cached system prompt.",
+          "All secrets live in Azure Key Vault, fetched at runtime via managed identity — zero credentials in code.",
+          "Full IaC with Terraform: entire stack deploys and destroys with one command, proving true reproducibility.",
+        ],
+      },
+      solutionImage: "/images/email-agent-keyvault.png",
+      solutionImageCaption:
+        "Azure Key Vault — three secrets listed (foundry-api-key, foundry-deployment, gmail-credentials-json), all enabled. No values visible, none in source control.",
+      outcome: {
+        title: "Outcome",
+        summary:
+          "A fully working AI email agent proven end-to-end, with the complete IaC lifecycle demonstrated via screen-recorded rebuild from zero.",
+        bullets: [
+          "Fully working AI email agent — polls, classifies, drafts, and sends replies automatically.",
+          "Complete IaC lifecycle demonstrated: deploy, prove, destroy, and rebuild from zero.",
+          "Total Azure spend: ~$1.50 across all sessions — production-grade security at near-zero cost.",
+          "Zero secrets committed to source control throughout the entire build.",
+        ],
+      },
+      problemImage: "/images/email-agent-vm.png",
+      problemImageCaption:
+        "Azure VM — vm-azure-email-agent running Ubuntu 22.04, Status: Running, Primary NIC public IP: none. No exposed ports.",
+      codeSample: {
+        language: "python",
+        title: "Claude Client — prompt caching, structured JSON output, graceful fallback",
+        snippet: `response = self._client.messages.create(
+    model=self._deployment,
+    max_tokens=1024,
+    system=[{
+        "type": "text",
+        "text": _SYSTEM_PROMPT,
+        "cache_control": {"type": "ephemeral"},
+    }],
+    messages=[{"role": "user", "content": user_content}],
+)`,
+      },
+      learnings: [
+        {
+          category: "Security & Identity",
+          points: [
+            "System-assigned managed identity removes the credential rotation problem entirely — the VM authenticates to Key Vault without any stored secret.",
+            "Key Vault in RBAC mode (not legacy access policies) gives fine-grained, auditable permission control per identity.",
+            "No public IP on the VM: SSH access via Azure Bastion only, reducing the exposed attack surface to zero ports.",
+          ],
+        },
+        {
+          category: "Infrastructure as Code",
+          points: [
+            "Terraform one-command deploy and destroy proved true reproducibility — the rebuild-from-zero screen recording is the evidence.",
+            "A three-stage Azure DevOps pipeline with a manual approval gate before apply mirrors production change management at zero cost.",
+            "Tagging all resources in Terraform made cost attribution and cleanup trivial.",
+          ],
+        },
+        {
+          category: "AI Integration",
+          points: [
+            "Prompt caching via cache_control: ephemeral reduces API latency and cost on repeated classifications — essential for a 60-second poll loop.",
+            "Structured JSON output from Claude makes downstream parsing reliable and eliminates brittle string matching.",
+            "Claude Sonnet 4.6 handles nuanced classification (urgent vs. routine vs. spam) better than keyword rules, with no false positives on test data.",
+          ],
+        },
+      ],
+      monitoring: [
+        {
+          title: "Azure Log Analytics",
+          description:
+            "Structured logs from the Python agent are shipped to a Log Analytics workspace, providing a queryable audit trail of every email processed, classification result, and reply sent.",
+        },
+        {
+          title: "Cost Tracking",
+          description:
+            "Total Azure spend across all sessions: CA$2.26 (~$1.50 USD). Virtual Machines accounted for the majority at CA$2.21 — the VM ran only during active demo sessions. Key Vault and bandwidth combined to less than CA$0.01.",
+          visual: "cost-analysis",
+          image: "/images/email-agent-cost-analysis.png",
+        },
+      ],
+      roadmap: {
+        milestones: [
+          {
+            id: "ea-m1",
+            label: "Local Environment Setup",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "WSL2, Python environment, Gmail API credentials, and OAuth 2.0 flow configured locally before touching any cloud infrastructure.",
+            tickets: [
+              {
+                key: "EA-101",
+                title: "WSL2 + Python Environment",
+                finishingComment:
+                  "Confirmed Gmail API OAuth flow working locally before touching Azure. Test locally first is the rule.",
+              },
+            ],
+          },
+          {
+            id: "ea-m2",
+            label: "Project Scaffold + GitHub",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Repository initialized with .gitignore guarding against credential commits. Folder structure established for agent, Terraform, and pipeline code.",
+            tickets: [
+              {
+                key: "EA-102",
+                title: "Repo Init + .gitignore",
+                finishingComment:
+                  ".gitignore covers .env, *.json token files, and __pycache__ from day one. No credentials ever touched the remote.",
+              },
+            ],
+          },
+          {
+            id: "ea-m3",
+            label: "Terraform Infrastructure",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Full Azure stack defined in Terraform: VNet, VM with managed identity, Key Vault in RBAC mode, and Log Analytics workspace.",
+            tickets: [
+              {
+                key: "EA-103",
+                title: "VM + Managed Identity",
+                finishingComment:
+                  "System-assigned managed identity provisioned at VM creation. Key Vault RBAC role assignment wired in the same Terraform apply.",
+              },
+              {
+                key: "EA-104",
+                title: "Key Vault + Log Analytics",
+                finishingComment:
+                  "Key Vault configured in RBAC mode with purge protection. Log Analytics workspace linked to VM diagnostics settings.",
+              },
+            ],
+          },
+          {
+            id: "ea-m4",
+            label: "Python Agent Code",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Gmail polling loop, Claude classification and reply drafting, Key Vault secret fetch via managed identity SDK — all integrated and tested.",
+            tickets: [
+              {
+                key: "EA-201",
+                title: "Gmail Poll + Classification",
+                finishingComment:
+                  "60-second poll loop with Claude Sonnet 4.6 classifying each email. Prompt caching on the system prompt keeps latency and cost down.",
+              },
+              {
+                key: "EA-202",
+                title: "Key Vault SDK Integration",
+                finishingComment:
+                  "azure-identity DefaultAzureCredential handles managed identity auth transparently — same code works locally (via CLI auth) and on the VM (via managed identity).",
+              },
+            ],
+          },
+          {
+            id: "ea-m5",
+            label: "Azure DevOps Pipeline",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Three-stage pipeline: Terraform plan → manual approval gate → Terraform apply. Mirrors enterprise change management with a human gate before infrastructure changes land.",
+            tickets: [
+              {
+                key: "EA-301",
+                title: "Pipeline YAML + Approval Gate",
+                finishingComment:
+                  "Manual approval gate configured before the apply stage. No infrastructure change lands without a human sign-off — production practice at zero extra cost.",
+              },
+            ],
+          },
+          {
+            id: "ea-m6",
+            label: "Deploy + Prove + Destroy",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Full end-to-end run: deploy via pipeline, prove agent works against live Gmail, destroy all resources. Total spend: ~$1.50.",
+            tickets: [
+              {
+                key: "EA-302",
+                title: "End-to-End Demo",
+                finishingComment:
+                  "Agent classified and replied to test emails correctly. All resources destroyed cleanly after the demo. Azure cost report confirmed ~$1.50 total.",
+              },
+            ],
+          },
+          {
+            id: "ea-m8",
+            label: "Case Study Published",
+            status: "In Progress",
+            progress: 75,
+            summary:
+              "Portfolio case study written and published to adventuringghost.com.",
+            tickets: [
+              {
+                key: "EA-402",
+                title: "Portfolio Entry",
+                finishingComment:
+                  "Case study content complete. Publishing to portfolio site now.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       slug: "nomad-net",
       title: "Nomad-Net: The Physical Nervous System",
       cardVariant: "primary",

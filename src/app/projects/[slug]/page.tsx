@@ -46,15 +46,17 @@ interface MonitoringItemData {
   title: string;
   description: string;
   visual?: "cost-analysis";
+  image?: string;
 }
 
 const MonitoringItem = ({ item }: { item: MonitoringItemData }) => {
   if (item.visual === "cost-analysis") {
+    const src = item.image ?? "/diagram/cost-analysis-visual.png";
     return (
       <Card className="p-4">
         <h4 className="text-lg font-bold text-gray-900 mb-2">{item.title}</h4>
         <Image
-          src="/diagram/cost-analysis-visual.png"
+          src={src}
           alt={`Visual diagram for ${item.title}`}
           width={800}
           height={450}

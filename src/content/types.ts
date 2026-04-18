@@ -77,6 +77,7 @@ export interface Project {
     title: string;
     description: string;
     visual?: "cost-analysis";
+    image?: string;
   }[];
   roadmap?: {
     milestones: Milestone[];
