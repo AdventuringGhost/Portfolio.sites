@@ -24,6 +24,395 @@ export const siteContent: SiteContent = {
   certs: [],
   projects: [
     {
+      slug: "ai-thesis",
+      title: "The Ghost in the Machine: Why AI is the New Currency of Intent",
+      tagline: "From capability stacks to agentic action in real-world work",
+      cardVariant: "primary",
+      summaryBullets: [
+        "Frames AI as a tiered capability stack: Deep Learning -> Gen AI -> Agentic AI.",
+        "Defines an AI agent as intent converted into action through memory, planning, and tool use.",
+        "Provides a practical learning path for professionals to start applying agentic workflows now.",
+      ],
+      buttonText: "Read more",
+      stack: ["ChatGPT", "Gemini", "Cursor", "GitHub Copilot", "Research"],
+      overview:
+        "AI is no longer just a chatbot feature set. It is becoming the new currency of intent: the ability to convert what you mean into systems that act. This article reframes AI as a practical toolkit for both white-collar and blue-collar professionals, then outlines how to start applying agentic workflows in daily operations.",
+      image: "/images/thesis.png",
+      architecture: {
+        description:
+          "To spend this new currency effectively, we have to understand what AI actually is: not a magic trick, but a stack of capabilities that progresses from models to action.",
+        components: [
+          "As shown in the framework, the field has moved from Deep Learning foundations to Gen AI creation and now to Agentic AI execution.",
+          "For white-collar professionals, this shifts work from one-off assistance to AI-managed workflows such as scheduling and coordination.",
+          "For blue-collar professionals, this points to autonomous equipment that can detect pests, adapt to soil conditions, and execute tasks in real time.",
+        ],
+      },
+      architectureImage: "/images/photo.two.jpg",
+      architectureImageCaption:
+        "Figure 1: The AI Evolution. From deep learning foundations to Gen AI capabilities, leading to Agentic AI systems capable of complex action.",
+      problem: {
+        title: "2. The Anatomy of an Agent",
+        summary:
+          "If AI is the currency, the AI agent is the transaction. The key shift happens when a system moves from interpreting your request to planning and executing action.",
+        bullets: [
+          "An effective agent combines perception, reasoning, memory, and tool use in a continuous loop.",
+          "Memory allows context retention across tasks, from farm history to client histories and project constraints.",
+          "In the Nomad Edge and Nomad-Net work, this appears as systems that can plan steps, call tools, and adapt based on feedback.",
+        ],
+      },
+      problemImage: "/images/photo.three.jpg",
+      problemImageCaption:
+        "Figure 2: The Agentic Loop. An agent is a synthesis of Perception, Brain (reasoning/memory), and the ability to use specific tools.",
+      solution: {
+        title: "3. Human Will in the Loop",
+        summary:
+          "Human judgment remains the anchor. The most reliable operating model is still Human-in-the-Loop (HITL), where AI accelerates execution while humans define direction, risk boundaries, and final accountability.",
+        bullets: [
+          "Use AI for the What: drafting, summarizing, and boilerplate acceleration.",
+          "Keep humans on the Why: architecture decisions, safety, and trade-off selection.",
+          "Treat AI as a power tool that multiplies skilled labor rather than replacing expertise.",
+        ],
+      },
+      outcome: {
+        title: "4. How to Start Spending This Currency",
+        summary:
+          "The barrier to entry has never been lower. You do not need a PhD to start applying AI in your trade or office, but you do need a practical sequence for learning and deployment.",
+        bullets: [
+          "Start with core concepts, then move into applied agent workflows and tool orchestration.",
+          "Use structured projects to bridge theory into repeatable execution patterns.",
+          "Follow a curated roadmap of essential resources to build practical competence in deploying AI agents in 2026.",
+        ],
+      },
+      outcomeImage: "/images/photo.five.jpg",
+      outcomeImageCaption:
+        "Figure 3: A Learning Path. A curated set of essential resources for mastering practical AI-agent deployment in 2026.",
+      learnings: [
+        {
+          category: "The Toolbox: An Interface Comparison",
+          points: [
+            '**ChatGPT (The Multi-Tool):** Generalist brainstorming and translating complex concepts into "plain English."',
+            "**Gemini (The Connected Foreman):** Real-time research and verification against live documentation (Google, 2024).",
+            "**Cursor (The Specialized Workshop):** Deep, project-wide contextual understanding for hardcore building, though at a higher cost.",
+            '**GitHub Copilot (The Apprentice):** Automates "toil"—the repetitive, manual grunt work and boilerplate code (Beyer et al., 2016).',
+          ],
+        },
+        {
+          category: "References",
+          points: [
+            "Bender, E. M., et al. (2021). On the Dangers of Stochastic Parrots. ACM Conference on Fairness, Accountability, and Transparency.",
+            "Google. (2024). Gemini: A Family of Highly Capable Multimodal Models. Technical Report.",
+            "IBM. (2023). The Quantified Value of Human-in-the-loop AI. IBM Institute for Business Value.",
+            "ISO/IEC 42001. (2023). Information technology - Artificial intelligence - Management system.",
+            "LangChain. (2026). LangChain and LangGraph Documentation.",
+            "Microsoft. (2023). AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.",
+            "NIST. (2023). AI Risk Management Framework (AI RMF 1.0).",
+            "OpenAI. (2023). GPT-4 Technical Report.",
+            "OpenAI. (2026). API Documentation for Tool Use and Agent Workflows.",
+            "Pan, Y. (2016). Heading toward Artificial Intelligence 2.0. Engineering, 2(4).",
+            "Schick, T., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. NeurIPS.",
+            "Wang, G., et al. (2023). Voyager: An Open-Ended Embodied Agent with Large Language Models.",
+            "Yao, S., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models.",
+            "Schlosser, K. (2026). The Nomad Edge Project: A Case Study in Distributed Resilience. Portfolio Research.",
+            "Zanzotto, F. M. (2020). Human-in-the-loop Artificial Intelligence. IEEE Intelligent Systems.",
+          ],
+        },
+      ],
+      monitoring: [],
+      roadmap: {
+        milestones: [
+          {
+            id: "t1",
+            label: "Research Phase",
+            status: "Complete",
+            progress: 100,
+            summary: "Initial research and literature review",
+          },
+          {
+            id: "t2",
+            label: "Analysis",
+            status: "Complete",
+            progress: 100,
+            summary: "Deep dive analysis and findings",
+          },
+          {
+            id: "t3",
+            label: "Documentation",
+            status: "Complete",
+            progress: 100,
+            summary: "Final thesis write-up and conclusions",
+          },
+        ],
+      },
+    },
+    {
+      slug: "warden",
+      title: "Warden — Self-Healing Kubernetes Security Agent",
+      tagline:
+        "AI-driven threat triage and auto-remediation on AKS — two-layer security proven end-to-end for ~$2",
+      cardVariant: "accent",
+      summaryBullets: [
+        "FastAPI webhook server receives Falco runtime alerts and OPA Gatekeeper violations, triages with Claude Sonnet 4.6, and auto-patches low-severity incidents",
+        "Two-layer security: OPA Gatekeeper blocks bad workloads at admission; Falco detects threats at runtime via eBPF kernel probes",
+        "Full pipeline proven on AKS: shell spawn detected → Falcosidekick → Claude triage → auto-patch → HTTP 200",
+        "Total AKS cloud spend across all sessions: ~$2",
+      ],
+      stack: [
+        "Python",
+        "FastAPI",
+        "Kubernetes / AKS",
+        "Falco",
+        "OPA Gatekeeper",
+        "Claude Sonnet 4.6",
+        "Azure Key Vault",
+        "Prometheus",
+        "Terraform",
+        "Azure DevOps",
+      ],
+      codeUrl: "https://github.com/AdventuringGhost/warden",
+      overview:
+        "A self-healing Kubernetes security agent deployed on Azure Kubernetes Service. Warden is a Python FastAPI webhook server that receives Falco runtime security alerts and OPA Gatekeeper admission violations, triages each incident with Claude Sonnet 4.6, auto-patches low-severity threats immediately, and drafts remediation runbooks for high-severity incidents requiring human approval. Two-layer security coverage proven end-to-end on a live AKS cluster for ~$2 in total cloud spend.",
+      architecture: {
+        description:
+          "Warden enforces security at two points in the Kubernetes lifecycle. OPA Gatekeeper intercepts workloads at admission — blocking privileged containers, unverified registries, and non-root violations before they reach a node. Falco runs as a privileged DaemonSet using eBPF kernel probes to detect shell spawns, privilege escalation, and suspicious syscalls at runtime. Falcosidekick forwards Falco events to Warden's webhook endpoint. Claude Sonnet 4.6 triages each alert and Warden acts: auto-patching low-severity incidents or generating a runbook for human review. API keys live in Azure Key Vault and are injected at runtime. Prometheus metrics track all triage decisions and outcomes.",
+        components: [
+          "Python FastAPI webhook server receiving alerts from Falco and OPA Gatekeeper",
+          "OPA Gatekeeper ConstraintTemplates (Rego) blocking privileged containers, unverified registries, and non-root violations at admission",
+          "Falco DaemonSet using eBPF kernel probes for real-time runtime detection of shell spawns, privilege escalation, and suspicious syscalls",
+          "Falcosidekick forwarding Falco events to the Warden webhook endpoint inside the cluster",
+          "Claude Sonnet 4.6 for structured alert triage — severity classification and remediation recommendation",
+          "Azure Key Vault storing the Claude API key, injected at runtime via managed identity — never in source control",
+          "Prometheus metrics tracking alert volume by severity, auto-patch outcomes, and Claude API latency",
+          "Terraform provisioning the AKS cluster and Azure supporting resources",
+          "Azure DevOps pipeline for infrastructure deployment",
+        ],
+      },
+      problem: {
+        title: "Problem",
+        summary:
+          "Kubernetes clusters generate a constant stream of security events — admission violations, runtime anomalies, syscall alerts — that require expert triage, manual response, and accurate severity judgment. Without automation, security teams are buried in noise, slow to respond to real threats, and unable to scale coverage.",
+        bullets: [
+          "Runtime security events require immediate triage, but manual review is slow and error-prone at volume.",
+          "Admission control and runtime detection are often siloed with no unified response layer connecting them.",
+          "Low-severity incidents that could be auto-remediated still consume engineer time, reducing capacity for real threats.",
+        ],
+      },
+      solution: {
+        title: "Solution",
+        summary:
+          "A Python FastAPI webhook server that sits between Kubernetes security tooling and on-call engineers. Warden receives Falco and OPA alerts, classifies severity with Claude Sonnet 4.6, and acts — auto-patching low-severity incidents immediately and surfacing AI-drafted runbooks for high-severity threats that require a human decision.",
+        bullets: [
+          "Layer 1 — OPA Gatekeeper: Rego policies block non-compliant workloads at admission — no privileged containers, no unverified registries, no non-root violations.",
+          "Layer 2 — Falco: eBPF kernel probes detect threats at runtime — shell spawns, privilege escalation, and suspicious syscall patterns.",
+          "Claude Sonnet 4.6 triage: structured severity classification — low severity triggers auto-patch, high severity generates a runbook for human review.",
+          "Azure Key Vault for secret management: the Claude API key is injected at runtime, never stored in source control or container images.",
+        ],
+      },
+      solutionImage: "/images/warden-opa-constraint-blocking.png",
+      solutionImageCaption: "OPA Gatekeeper blocking a privileged container at admission — Layer 1 enforcement working on AKS.",
+      outcome: {
+        title: "Outcome",
+        summary:
+          "End-to-end Kubernetes security automation proven on a live AKS cluster: Falco detected a shell spawn, Falcosidekick forwarded the alert to Warden, Claude triaged it as low severity, Warden auto-patched and returned HTTP 200 — all within 3 seconds. Total cloud spend: ~$2.",
+        bullets: [
+          "Full AKS pipeline proven: shell spawn → Falcosidekick → Claude triage (severity=low) → auto-patch → HTTP 200.",
+          "Two-layer security coverage: OPA admission control and Falco runtime detection operating independently on the same cluster.",
+          "Total cloud spend across all sessions: ~$2 — production-grade Kubernetes security at near-zero cost.",
+          "All AI triage decisions logged with full reasoning chain, original alert payload, and action taken — complete audit trail.",
+        ],
+      },
+      outcomeImage: "/images/warden-falco-event-detected.png",
+      outcomeImageCaption: "Falco detecting a shell spawn inside a running container — Layer 2 runtime detection triggering the full triage pipeline.",
+      codeSample: {
+        language: "python",
+        title: "Warden webhook handler — receive alert, triage with Claude, act on severity",
+        snippet: `@app.post("/webhook")
+async def handle_alert(payload: dict):
+    alert = parse_alert(payload)
+
+    triage = await claude_client.triage(
+        alert=alert,
+        system_prompt=TRIAGE_POLICY,
+    )
+
+    if triage.severity == "low":
+        await remediate(alert, triage.action)
+        metrics.auto_patch_count.inc()
+        return {"status": "patched", "severity": triage.severity}
+
+    runbook = await claude_client.draft_runbook(alert, triage)
+    metrics.runbook_count.inc()
+    return {"status": "runbook_drafted", "severity": triage.severity}`,
+      },
+      learnings: [
+        {
+          category: "Kubernetes Security",
+          points: [
+            "OPA Gatekeeper and Falco address different threat surfaces — admission control stops misconfigurations; runtime detection catches adversarial behaviour that only appears after a workload is running.",
+            "Namespace-scoped exclusions are the right pattern for security tooling that needs elevated permissions — Falco's DaemonSet is privileged, so the falco namespace is excluded from BlockPrivilegedContainers constraints.",
+            "Parameterised OPA ConstraintTemplates add schema validation complexity that can fail across Kubernetes versions; for a small known-registry list, hardcoded Rego is simpler and more reliable.",
+          ],
+        },
+        {
+          category: "AI-Driven Automation",
+          points: [
+            "Claude Sonnet 4.6 works as a reliable triage component when given structured inputs and constrained output formats — it classifies alerts consistently with defined severity rubrics.",
+            "Human approval gates for high-severity actions are non-negotiable; auto-remediation without bounds is a liability, not a feature.",
+            "Full logging of AI reasoning with the original alert payload enables post-incident review and builds trust in automated decisions over time.",
+          ],
+        },
+        {
+          category: "Secrets & Operations",
+          points: [
+            "Secrets injected from external vaults can be silently corrupted — validate API key format and length at startup before accepting traffic, not reactively after the first 401.",
+            "The ConfigMap-mounted code pattern enables rapid iteration on cluster-internal tooling without custom image builds — acceptable for development, not for production.",
+            "WSL2 eBPF limitations mean local Falco detection is not possible; design the dev loop around real cluster validation for eBPF-dependent tooling from the start.",
+          ],
+        },
+      ],
+      monitoring: [
+        {
+          title: "Prometheus Metrics",
+          description:
+            "Custom metrics track alert volume by severity, auto-patch success and failure rate, Claude API response latency, and runbook generation count. Scraped by the cluster's Prometheus instance and queryable for post-incident analysis.",
+        },
+        {
+          title: "Triage Audit Log",
+          description:
+            "Every AI triage decision is logged with the original alert payload, Claude's severity classification, the action taken, and a timestamp — giving a complete audit trail for post-incident review and trust-building in automated decisions.",
+        },
+      ],
+      roadmap: {
+        milestones: [
+          {
+            id: "wa-m1",
+            label: "AKS Cluster Provisioning",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "AKS cluster and supporting Azure resources provisioned with Terraform. Azure Key Vault configured for runtime secret injection.",
+            tickets: [
+              {
+                key: "WA-101",
+                title: "Terraform AKS + Azure Resources",
+                finishingComment:
+                  "Cluster provisioned, Key Vault wired up, and Azure DevOps pipeline configured. Infrastructure ready for Warden deployment.",
+              },
+              {
+                key: "WA-102",
+                title: "Azure Key Vault Integration",
+                finishingComment:
+                  "Claude API key stored in Key Vault and injected at runtime. Startup validation added to catch corrupted secrets before traffic is accepted.",
+              },
+            ],
+          },
+          {
+            id: "wa-m2",
+            label: "OPA Gatekeeper Policies",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Admission control layer implemented with Rego ConstraintTemplates. Namespace exclusions configured for Falco's privileged DaemonSet.",
+            tickets: [
+              {
+                key: "WA-201",
+                title: "BlockPrivilegedContainers ConstraintTemplate",
+                finishingComment:
+                  "Rego policy blocks privileged containers cluster-wide. Falco namespace excluded to allow Falco's own DaemonSet to run.",
+              },
+              {
+                key: "WA-202",
+                title: "AllowedImageRegistries ConstraintTemplate",
+                finishingComment:
+                  "Registries hardcoded in Rego after parameterised schema validation errors on AKS. Simpler and more reliable.",
+              },
+            ],
+          },
+          {
+            id: "wa-m3",
+            label: "Falco Runtime Detection",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Falco DaemonSet deployed on AKS with eBPF probes active. Falcosidekick configured to forward events to the Warden webhook endpoint.",
+            tickets: [
+              {
+                key: "WA-301",
+                title: "Falco DaemonSet on AKS",
+                finishingComment:
+                  "Falco running on every node with eBPF probes. WSL2 eBPF limitations documented — full detection validated on-cluster only.",
+              },
+              {
+                key: "WA-302",
+                title: "Falcosidekick Webhook Forwarding",
+                finishingComment:
+                  "Falcosidekick configured to POST structured Falco events to the Warden webhook endpoint inside the cluster.",
+              },
+            ],
+          },
+          {
+            id: "wa-m4",
+            label: "Warden Webhook Server",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "FastAPI webhook server deployed via ConfigMap-mounted code. Claude Sonnet 4.6 triage integrated with auto-patch and runbook generation.",
+            tickets: [
+              {
+                key: "WA-401",
+                title: "FastAPI Webhook Endpoint",
+                finishingComment:
+                  "Webhook server receives Falco and OPA alert payloads and routes to the triage pipeline.",
+              },
+              {
+                key: "WA-402",
+                title: "Claude Sonnet Triage Integration",
+                finishingComment:
+                  "Structured triage with severity classification. Low severity triggers auto-patch; high severity generates a runbook for human review.",
+              },
+              {
+                key: "WA-403",
+                title: "ConfigMap-Mounted Agent Pattern",
+                finishingComment:
+                  "Agent code mounted as a Kubernetes ConfigMap and executed via a base Python image — no custom image build required for development iterations.",
+              },
+            ],
+          },
+          {
+            id: "wa-m5",
+            label: "End-to-End Pipeline Proven",
+            status: "Complete",
+            progress: 100,
+            summary:
+              "Full AKS pipeline validated: Falco detected a shell spawn, Falcosidekick forwarded to Warden, Claude triaged severity=low, auto-patch applied, HTTP 200 returned.",
+            tickets: [
+              {
+                key: "WA-501",
+                title: "AKS End-to-End Demo",
+                finishingComment:
+                  "Shell spawn in a container triggered Falco. Alert forwarded via Falcosidekick. Claude returned severity=low. Warden auto-patched and returned HTTP 200. Pipeline complete.",
+              },
+            ],
+          },
+          {
+            id: "wa-m6",
+            label: "Case Study Published",
+            status: "In Progress",
+            progress: 75,
+            summary:
+              "Portfolio case study written and published to adventuringghost.com.",
+            tickets: [
+              {
+                key: "WA-601",
+                title: "Portfolio Entry",
+                finishingComment:
+                  "Case study content complete. Publishing to portfolio site now.",
+              },
+            ],
+          },
+        ],
+      },
+    },
+    {
       slug: "azure-email-agent",
       title: "Azure Gmail Email Agent",
       tagline: "A DevSecOps case study — AI-powered email automation on Azure for $1.50",
@@ -644,241 +1033,16 @@ module "edge_node" {
       title: "Glow Grove — Static Site on AWS (S3 + CloudFront)",
       cardVariant: "secondary",
       summaryBullets: [
-        "Built an ultra€‘low€‘cost marketing site delivered via S3 origin + CloudFront CDN.",
-        "Custom domain and TLS handled by RouteÂ 53 and ACM (us-east-1).",
+        "Built an ultra-low-cost marketing site delivered via S3 origin + CloudFront CDN.",
+        "Custom domain and TLS handled by Route 53 and ACM (us-east-1).",
         "Deployment currently manual; GitHub Actions CI/CD planned.",
       ],
       stack: ["Next.js", "AWS S3", "CloudFront", "Route 53", "ACM"],
       codeUrl: "https://github.com/adventuringghost/glow-grove",
       liveUrl: "https://glow-grove.com/",
       overview:
-        "Static site exported from Next.js and hosted on Amazon S3 with CloudFront CDN, RouteÂ 53 DNS, and ACM TLS.",
+        "Static site exported from Next.js and hosted on Amazon S3 with CloudFront CDN, Route 53 DNS, and ACM TLS.",
       image: "/images/glow-grove-visual.png",
-    },
-    {
-      slug: "portfolio-rebuild",
-      title: "Portfolio Rebuild — Next.js & TypeScript Refactor",
-      cardVariant: "ghost",
-      summaryBullets: [
-        "Rebuilt personal portfolio from v1 using Next.js App Router and TypeScript",
-        "Fixed complex navigation and routing issues with Link component integration",
-        "Implemented dynamic project pages with MDX support for rich case studies",
-        "Deployed to AWS S3 + CloudFront with custom domain and TLS",
-      ],
-      stack: ["Next.js", "TypeScript", "React", "Tailwind CSS", "AWS", "MDX"],
-      codeUrl: "https://github.com/adventuringghost/portfolio-v2",
-      architectureImage: "/images/portfolio-rebuild-header.png",
-      overview:
-        "A complete redesign and refactor of my portfolio site, focusing on clean code architecture, better component composition, and seamless project showcase capabilities.",
-      architecture: {
-        description:
-          "Single-page Next.js application using the App Router with server-side rendering for case studies. Dynamic project pages powered by MDX allow rich content embedding. All assets are optimized and deployed via S3 with CloudFront CDN for global distribution.",
-        components: [
-          "Next.js App Router for file-based routing and server components",
-          "TypeScript for type-safe component development",
-          "Tailwind CSS for responsive, utility-first styling",
-          "MDX integration for dynamic project case study pages",
-          "AWS S3 + CloudFront for static asset delivery and CDN",
-          "Radix UI primitives for accessible button and component patterns",
-        ],
-      },
-      problem: {
-        title: "Problem",
-        summary:
-          "The original portfolio lacked proper organization and had complex state management. Navigation was inconsistent, and adding new projects required manual updates across multiple files.",
-        bullets: [
-          "No clear separation between content and presentation layer",
-          "Button routing issues in development vs. production environments",
-          "Manual page creation was error-prone and not scalable",
-        ],
-      },
-      solution: {
-        title: "Solution",
-        summary:
-          "Implement a content-driven architecture with TypeScript for type safety, dynamic route generation from a centralized content file, and proper component composition using Radix UI primitives.",
-        bullets: [
-          "Centralized site content in a single TypeScript file with typed exports",
-          "Dynamic project pages generated from slugs in the content configuration",
-          "Fixed Button component to properly handle Next.js Link integration with Radix Slot",
-          "Implemented responsive design with Tailwind CSS breakpoints",
-        ],
-      },
-      outcome: {
-        title: "Outcome",
-        summary:
-          "Now adding projects is as simple as updating the content file with new entries. The site is faster, more maintainable, and provides a better user and developer experience.",
-        bullets: [
-          "New projects can be added by simply editing the content configuration",
-          "All pages are statically optimized and deploy instantly to AWS",
-          "Navigation works flawlessly in both development and production",
-          "Type safety prevents content-related bugs before they reach production",
-        ],
-      },
-      learnings: [
-        {
-          category: "Key Decisions & Learnings",
-          points: [
-            "Chose Next.js App Router over Pages Router for better performance and modern patterns",
-            "Implemented typed content structure to catch errors at build time, not runtime",
-            "Fixed Radix UI Slot integration issues by understanding how asChild merges attributes",
-            "Kept styling simple with Tailwind to avoid theme complexity",
-          ],
-        },
-      ],
-      monitoring: [],
-      roadmap: {
-        milestones: [
-          {
-            id: "p1",
-            label: "Architecture Design",
-            status: "Complete",
-            progress: 100,
-            summary: "Plan content structure and component hierarchy",
-          },
-          {
-            id: "p2",
-            label: "Core Components",
-            status: "Complete",
-            progress: 100,
-            summary: "Build base UI components and layout system",
-          },
-          {
-            id: "p3",
-            label: "Dynamic Pages",
-            status: "Complete",
-            progress: 100,
-            summary: "Implement MDX-powered project pages",
-          },
-          {
-            id: "p4",
-            label: "AWS Deployment",
-            status: "Complete",
-            progress: 100,
-            summary: "Deploy to S3 + CloudFront with custom domain",
-          },
-        ],
-      },
-    },
-    {
-      slug: "ai-thesis",
-      title: "The Ghost in the Machine: Why AI is the New Currency of Intent",
-      tagline: "From capability stacks to agentic action in real-world work",
-      cardVariant: "primary",
-      summaryBullets: [
-        "Frames AI as a tiered capability stack: Deep Learning -> Gen AI -> Agentic AI.",
-        "Defines an AI agent as intent converted into action through memory, planning, and tool use.",
-        "Provides a practical learning path for professionals to start applying agentic workflows now.",
-      ],
-      buttonText: "Read more",
-      stack: ["ChatGPT", "Gemini", "Cursor", "GitHub Copilot", "Research"],
-      overview:
-        "AI is no longer just a chatbot feature set. It is becoming the new currency of intent: the ability to convert what you mean into systems that act. This article reframes AI as a practical toolkit for both white-collar and blue-collar professionals, then outlines how to start applying agentic workflows in daily operations.",
-      image: "/images/thesis.png",
-      architecture: {
-        description:
-          "To spend this new currency effectively, we have to understand what AI actually is: not a magic trick, but a stack of capabilities that progresses from models to action.",
-        components: [
-          "As shown in the framework, the field has moved from Deep Learning foundations to Gen AI creation and now to Agentic AI execution.",
-          "For white-collar professionals, this shifts work from one-off assistance to AI-managed workflows such as scheduling and coordination.",
-          "For blue-collar professionals, this points to autonomous equipment that can detect pests, adapt to soil conditions, and execute tasks in real time.",
-        ],
-      },
-      architectureImage: "/images/photo.two.jpg",
-      architectureImageCaption:
-        "Figure 1: The AI Evolution. From deep learning foundations to Gen AI capabilities, leading to Agentic AI systems capable of complex action.",
-      problem: {
-        title: "2. The Anatomy of an Agent",
-        summary:
-          "If AI is the currency, the AI agent is the transaction. The key shift happens when a system moves from interpreting your request to planning and executing action.",
-        bullets: [
-          "An effective agent combines perception, reasoning, memory, and tool use in a continuous loop.",
-          "Memory allows context retention across tasks, from farm history to client histories and project constraints.",
-          "In the Nomad Edge and Nomad-Net work, this appears as systems that can plan steps, call tools, and adapt based on feedback.",
-        ],
-      },
-      problemImage: "/images/photo.three.jpg",
-      problemImageCaption:
-        "Figure 2: The Agentic Loop. An agent is a synthesis of Perception, Brain (reasoning/memory), and the ability to use specific tools.",
-      solution: {
-        title: "3. Human Will in the Loop",
-        summary:
-          "Human judgment remains the anchor. The most reliable operating model is still Human-in-the-Loop (HITL), where AI accelerates execution while humans define direction, risk boundaries, and final accountability.",
-        bullets: [
-          "Use AI for the What: drafting, summarizing, and boilerplate acceleration.",
-          "Keep humans on the Why: architecture decisions, safety, and trade-off selection.",
-          "Treat AI as a power tool that multiplies skilled labor rather than replacing expertise.",
-        ],
-      },
-      outcome: {
-        title: "4. How to Start Spending This Currency",
-        summary:
-          "The barrier to entry has never been lower. You do not need a PhD to start applying AI in your trade or office, but you do need a practical sequence for learning and deployment.",
-        bullets: [
-          "Start with core concepts, then move into applied agent workflows and tool orchestration.",
-          "Use structured projects to bridge theory into repeatable execution patterns.",
-          "Follow a curated roadmap of essential resources to build practical competence in deploying AI agents in 2026.",
-        ],
-      },
-      outcomeImage: "/images/photo.five.jpg",
-      outcomeImageCaption:
-        "Figure 3: A Learning Path. A curated set of essential resources for mastering practical AI-agent deployment in 2026.",
-      learnings: [
-        {
-          category: "The Toolbox: An Interface Comparison",
-          points: [
-            '**ChatGPT (The Multi-Tool):** Generalist brainstorming and translating complex concepts into "plain English."',
-            "**Gemini (The Connected Foreman):** Real-time research and verification against live documentation (Google, 2024).",
-            "**Cursor (The Specialized Workshop):** Deep, project-wide contextual understanding for hardcore building, though at a higher cost.",
-            '**GitHub Copilot (The Apprentice):** Automates "toil"—the repetitive, manual grunt work and boilerplate code (Beyer et al., 2016).',
-          ],
-        },
-        {
-          category: "References",
-          points: [
-            "Bender, E. M., et al. (2021). On the Dangers of Stochastic Parrots. ACM Conference on Fairness, Accountability, and Transparency.",
-            "Google. (2024). Gemini: A Family of Highly Capable Multimodal Models. Technical Report.",
-            "IBM. (2023). The Quantified Value of Human-in-the-loop AI. IBM Institute for Business Value.",
-            "ISO/IEC 42001. (2023). Information technology - Artificial intelligence - Management system.",
-            "LangChain. (2026). LangChain and LangGraph Documentation.",
-            "Microsoft. (2023). AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation.",
-            "NIST. (2023). AI Risk Management Framework (AI RMF 1.0).",
-            "OpenAI. (2023). GPT-4 Technical Report.",
-            "OpenAI. (2026). API Documentation for Tool Use and Agent Workflows.",
-            "Pan, Y. (2016). Heading toward Artificial Intelligence 2.0. Engineering, 2(4).",
-            "Schick, T., et al. (2023). Toolformer: Language Models Can Teach Themselves to Use Tools. NeurIPS.",
-            "Wang, G., et al. (2023). Voyager: An Open-Ended Embodied Agent with Large Language Models.",
-            "Yao, S., et al. (2023). ReAct: Synergizing Reasoning and Acting in Language Models.",
-            "Schlosser, K. (2026). The Nomad Edge Project: A Case Study in Distributed Resilience. Portfolio Research.",
-            "Zanzotto, F. M. (2020). Human-in-the-loop Artificial Intelligence. IEEE Intelligent Systems.",
-          ],
-        },
-      ],
-      monitoring: [],
-      roadmap: {
-        milestones: [
-          {
-            id: "t1",
-            label: "Research Phase",
-            status: "Complete",
-            progress: 100,
-            summary: "Initial research and literature review",
-          },
-          {
-            id: "t2",
-            label: "Analysis",
-            status: "Complete",
-            progress: 100,
-            summary: "Deep dive analysis and findings",
-          },
-          {
-            id: "t3",
-            label: "Documentation",
-            status: "Complete",
-            progress: 100,
-            summary: "Final thesis write-up and conclusions",
-          },
-        ],
-      },
     },
   ],
   skills: [
@@ -935,7 +1099,7 @@ module "edge_node" {
   },
   about: {
     content:
-      "I'm a MÃ©tis Cloud & DevOps engineer focused on resilient, rural-first infrastructure. My work is about more than clusters and pipelines; it's about keeping people online when they are hours away from the nearest city. I use cloud platforms, Nomad, Terraform, and automation as tools to solve human problems for the agricultural and rural communities I come from, with a bias toward calm, reliable systems over clever, fragile ones.",
+      "I'm a Métis Cloud & DevOps engineer focused on resilient, rural-first infrastructure. My work is about more than clusters and pipelines; it's about keeping people online when they are hours away from the nearest city. I use cloud platforms, Nomad, Terraform, and automation as tools to solve human problems for the agricultural and rural communities I come from, with a bias toward calm, reliable systems over clever, fragile ones.",
     profileImage: "/images/portfolio-photo.jpg",
     profileImageAlt: "A photo of the author, AdventuringGhost.",
   },

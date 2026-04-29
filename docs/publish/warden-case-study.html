@@ -1,0 +1,1990 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Warden — Self-Healing Kubernetes Security Agent | AdventuringGhost</title>
+  <meta name="description" content="A production case study: Warden is a Python FastAPI webhook server that receives Falco and OPA Gatekeeper alerts, triages them with Claude Sonnet AI, and auto-patches low-severity Kubernetes security incidents." />
+  <meta name="author" content="Skipper — adventuringghost.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & tokens ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f14;
+      --bg-card:    #13161e;
+      --bg-code:    #0a0c10;
+      --border:     #1e2330;
+      --border-lit: #2a3048;
+      --text:       #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4a5568;
+      --cyan:       #59d5e0;
+      --cyan-dim:   rgba(89,213,224,.12);
+      --yellow:     #f5dd61;
+      --yellow-dim: rgba(245,221,97,.10);
+      --green:      #4ade80;
+      --green-dim:  rgba(74,222,128,.10);
+      --red:        #f87171;
+      --red-dim:    rgba(248,113,113,.10);
+      --purple:     #a78bfa;
+      --purple-dim: rgba(167,139,250,.10);
+      --orange:     #fb923c;
+      --font-sans:  'Inter', system-ui, sans-serif;
+      --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+      --radius:     8px;
+      --radius-lg:  12px;
+      --max-w:      860px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .container {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    section { padding: 72px 0; }
+
+    section + section {
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Typography ─────────────────────────────────────────── */
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+
+    h1 { font-size: clamp(2rem, 5vw, 3rem); }
+    h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 32px; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; }
+
+    p { color: var(--text-muted); margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+
+    strong { color: var(--text); font-weight: 600; }
+
+    a { color: var(--cyan); text-decoration: none; transition: opacity .15s; }
+    a:hover { opacity: .75; }
+
+    ul { list-style: none; padding: 0; }
+
+    /* ── Section label ──────────────────────────────────────── */
+    .label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 16px;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,15,20,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .02em;
+    }
+
+    .nav-logo span { color: var(--cyan); }
+
+    .nav-links {
+      display: flex;
+      gap: 28px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      font-size: .82rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      transition: color .15s;
+    }
+
+    .nav-links a:hover { color: var(--cyan); }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .hero {
+      padding: 96px 0 80px;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse 70% 60% at 10% 0%, rgba(89,213,224,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 90% 100%, rgba(245,221,97,.05) 0%, transparent 60%);
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      background: linear-gradient(135deg, var(--text) 0%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+
+    .hero-tagline {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .hero-stat {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .hero-stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .hero-stat-label {
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .hero-stat-sep {
+      width: 1px;
+      height: 36px;
+      background: var(--border-lit);
+      align-self: center;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      transition: all .15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--cyan);
+      color: #0d0f14;
+    }
+
+    .btn-primary:hover {
+      background: #7ae0e9;
+      opacity: 1;
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-lit);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--cyan);
+      color: var(--cyan);
+      opacity: 1;
+    }
+
+    /* ── Badge / chip ────────────────────────────────────────── */
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-cyan   { background: var(--cyan-dim);   border-color: rgba(89,213,224,.25);  color: var(--cyan); }
+    .badge-yellow { background: var(--yellow-dim);  border-color: rgba(245,221,97,.25);  color: var(--yellow); }
+    .badge-green  { background: var(--green-dim);   border-color: rgba(74,222,128,.25);  color: var(--green); }
+    .badge-purple { background: var(--purple-dim);  border-color: rgba(167,139,250,.25); color: var(--purple); }
+    .badge-orange { background: rgba(251,146,60,.10); border-color: rgba(251,146,60,.25); color: var(--orange); }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: border-color .2s;
+    }
+
+    .card:hover { border-color: var(--border-lit); }
+
+    .card-grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    .card-grid-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .card-grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+    /* ── What it does ────────────────────────────────────────── */
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+
+    .flow-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 44px;
+      width: 2px;
+      height: calc(100% - 20px);
+      background: linear-gradient(to bottom, var(--cyan-dim), transparent);
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(89,213,224,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+
+    .step-body {
+      padding: 8px 0 32px;
+    }
+
+    .step-body h3 { color: var(--text); }
+    .step-body p { margin-top: 4px; }
+
+    /* ── Architecture layers ─────────────────────────────────── */
+    .arch-diagram {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .arch-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--text-dim);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .arch-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .arch-layers {
+      padding: 28px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .arch-layer {
+      border-radius: var(--radius);
+      padding: 16px 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .arch-layer-cyan   { background: var(--cyan-dim);   border: 1px solid rgba(89,213,224,.2); }
+    .arch-layer-purple { background: var(--purple-dim);  border: 1px solid rgba(167,139,250,.2); }
+    .arch-layer-yellow { background: var(--yellow-dim);  border: 1px solid rgba(245,221,97,.2); }
+    .arch-layer-green  { background: var(--green-dim);   border: 1px solid rgba(74,222,128,.2); }
+
+    .arch-layer-icon {
+      font-size: 1.3rem;
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .arch-layer-label {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .arch-layer-cyan   .arch-layer-label { color: var(--cyan); }
+    .arch-layer-purple .arch-layer-label { color: var(--purple); }
+    .arch-layer-yellow .arch-layer-label { color: var(--yellow); }
+    .arch-layer-green  .arch-layer-label { color: var(--green); }
+
+    .arch-layer p { font-size: .88rem; margin: 0; }
+
+    .arch-arrow {
+      text-align: center;
+      color: var(--text-dim);
+      font-size: .75rem;
+      font-family: var(--font-mono);
+      letter-spacing: .08em;
+    }
+
+    /* ── Pipeline trace ──────────────────────────────────────── */
+    .pipeline {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .pipeline-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pipeline-title {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--text-dim);
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 600;
+    }
+
+    .status-pill-green {
+      background: var(--green-dim);
+      border: 1px solid rgba(74,222,128,.3);
+      color: var(--green);
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+
+    .pipeline-steps {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+
+    .pipe-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+      position: relative;
+    }
+
+    .pipe-step:not(:last-child) {
+      padding-bottom: 20px;
+    }
+
+    .pipe-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 14px;
+      top: 32px;
+      width: 1px;
+      height: calc(100% - 18px);
+      background: var(--border-lit);
+    }
+
+    .pipe-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .9rem;
+      flex-shrink: 0;
+    }
+
+    .pipe-icon-cyan   { background: var(--cyan-dim);   border: 1px solid rgba(89,213,224,.2); }
+    .pipe-icon-purple { background: var(--purple-dim);  border: 1px solid rgba(167,139,250,.2); }
+    .pipe-icon-yellow { background: var(--yellow-dim);  border: 1px solid rgba(245,221,97,.2); }
+    .pipe-icon-green  { background: var(--green-dim);   border: 1px solid rgba(74,222,128,.2); }
+    .pipe-icon-orange { background: rgba(251,146,60,.10); border: 1px solid rgba(251,146,60,.2); }
+
+    .pipe-body h4 {
+      font-family: var(--font-mono);
+      font-size: .82rem;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .pipe-body p {
+      font-size: .82rem;
+      margin: 0;
+    }
+
+    /* ── Challenges ──────────────────────────────────────────── */
+    .challenge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .challenge-header {
+      padding: 18px 24px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .challenge-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--red-dim);
+      border: 1px solid rgba(248,113,113,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--red);
+      margin-top: 1px;
+    }
+
+    .challenge-title {
+      font-size: .98rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .challenge-body {
+      padding: 14px 24px 20px 66px;
+    }
+
+    .challenge-block {
+      margin-bottom: 12px;
+    }
+
+    .challenge-block:last-child { margin-bottom: 0; }
+
+    .challenge-block-label {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .label-problem { color: var(--red); }
+    .label-fix     { color: var(--green); }
+    .label-lesson  { color: var(--yellow); }
+
+    .challenge-block p { font-size: .88rem; }
+
+    /* ── Demonstrates ────────────────────────────────────────── */
+    .demonstrates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      transition: border-color .2s;
+    }
+
+    .demo-card:hover { border-color: var(--border-lit); }
+
+    .demo-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .demo-card h3 {
+      font-size: .95rem;
+      margin-bottom: 8px;
+    }
+
+    .demo-card p { font-size: .86rem; }
+
+    /* ── Differently ─────────────────────────────────────────── */
+    .diff-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .diff-item {
+      display: flex;
+      gap: 14px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+    }
+
+    .diff-arrow {
+      flex-shrink: 0;
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      color: var(--cyan);
+      margin-top: 2px;
+    }
+
+    .diff-item p { font-size: .88rem; margin: 0; }
+
+    /* ── Portfolio arc ───────────────────────────────────────── */
+    .arc-section {
+      background: linear-gradient(to bottom, var(--bg), #0a0c10);
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .arc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .arc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arc-card-live {
+      border-color: rgba(89,213,224,.25);
+    }
+
+    .arc-card-live::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--cyan-dim), transparent);
+      pointer-events: none;
+    }
+
+    .arc-card-planned {
+      opacity: .55;
+    }
+
+    .arc-project-num {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .arc-project-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .arc-project-desc {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .arc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .arc-status-live   { color: var(--cyan); }
+    .arc-status-planned { color: var(--text-dim); }
+
+    .arc-status-live::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--cyan);
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .arc-status-planned::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1px solid var(--text-dim);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .35; }
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    footer p {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--text-dim);
+      margin: 0;
+    }
+
+    footer a { color: var(--cyan); }
+
+    /* ── Utility ─────────────────────────────────────────────── */
+    .text-cyan   { color: var(--cyan); }
+    .text-yellow { color: var(--yellow); }
+    .text-green  { color: var(--green); }
+    .text-muted  { color: var(--text-muted); }
+    .mono        { font-family: var(--font-mono); }
+    .mb-0        { margin-bottom: 0; }
+
+    hr.divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 48px 0;
+    }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      section { padding: 52px 0; }
+      .hero   { padding: 64px 0 56px; }
+
+      .nav-links { display: none; }
+
+      .hero-meta { gap: 14px; }
+      .hero-stat-value { font-size: 1.15rem; }
+
+      .arch-layers { padding: 20px 16px; }
+      .challenge-body { padding-left: 24px; }
+
+      .arc-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 400px) {
+      .arc-grid { grid-template-columns: 1fr; }
+    }
+
+    /* ── Screenshots ─────────────────────────────────────────── */
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .screenshot-slot {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .screenshot-slot img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .screenshot-caption {
+      padding: 10px 14px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-dim);
+      border-top: 1px solid var(--border);
+      line-height: 1.5;
+    }
+
+    /* ── Cost table ──────────────────────────────────────────── */
+    .cost-table-wrap {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .cost-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .cost-table thead tr {
+      border-bottom: 1px solid var(--border-lit);
+    }
+
+    .cost-table th {
+      padding: 14px 18px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .cost-table th:first-child { color: var(--text-dim); }
+    .cost-table th.col-personal { color: var(--cyan); }
+    .cost-table th.col-team     { color: var(--green); }
+    .cost-table th.col-ent      { color: var(--yellow); }
+
+    .cost-table td {
+      padding: 13px 18px;
+      font-size: .87rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    .cost-table td:first-child {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+    }
+
+    .cost-table tbody tr:last-child td {
+      border-bottom: none;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(89,213,224,.04);
+    }
+
+    .cost-table tbody tr:last-child td:nth-child(2) { color: var(--cyan); }
+    .cost-table tbody tr:last-child td:nth-child(3) { color: var(--green); }
+    .cost-table tbody tr:last-child td:nth-child(4) { color: var(--yellow); }
+
+    .cost-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+    .cost-note {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Industry cards ──────────────────────────────────────── */
+    .industry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .industry-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      transition: border-color .2s;
+    }
+
+    .industry-card:hover { border-color: var(--border-lit); }
+
+    .industry-icon { font-size: 1.6rem; margin-bottom: 12px; }
+
+    .industry-name {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 6px;
+    }
+
+    .industry-card h3 {
+      font-size: .96rem;
+      margin-bottom: 12px;
+    }
+
+    .industry-card ul {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .industry-card li {
+      font-size: .83rem;
+      color: var(--text-muted);
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .industry-card li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--cyan);
+      font-size: .75rem;
+    }
+
+    /* ── Integration cards ───────────────────────────────────── */
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .integration-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .integration-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .integration-mode-cyan  { background: var(--cyan-dim);  border: 1px solid rgba(89,213,224,.25); color: var(--cyan); }
+    .integration-mode-green { background: var(--green-dim); border: 1px solid rgba(74,222,128,.25); color: var(--green); }
+
+    .integration-timeline {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .integration-card h3 { font-size: 1rem; margin-bottom: 10px; }
+
+    .integration-steps {
+      margin-top: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .integration-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .83rem;
+      color: var(--text-muted);
+    }
+
+    .integration-step-num {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--border-lit);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* ── ROI banner ──────────────────────────────────────────── */
+    .roi-banner {
+      background: var(--bg-card);
+      border: 1px solid rgba(89,213,224,.2);
+      border-radius: var(--radius-lg);
+      padding: 32px 36px;
+      margin-top: 32px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      flex-wrap: wrap;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .roi-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 55% 90% at 0% 50%, var(--cyan-dim), transparent);
+      pointer-events: none;
+    }
+
+    .roi-block {
+      flex-shrink: 0;
+      text-align: center;
+      min-width: 120px;
+    }
+
+    .roi-value {
+      font-family: var(--font-mono);
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+
+    .roi-value-cyan   { color: var(--cyan); }
+    .roi-value-red    { color: var(--red); }
+
+    .roi-value-label {
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .roi-vs {
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      color: var(--border-lit);
+      flex-shrink: 0;
+    }
+
+    .roi-body { flex: 1; min-width: 200px; }
+    .roi-body h3 { font-size: 1.05rem; margin-bottom: 8px; }
+    .roi-body p { font-size: .88rem; }
+
+    @media (max-width: 640px) {
+      .cost-table th, .cost-table td { padding: 10px 12px; }
+      .roi-banner { flex-direction: column; text-align: center; padding: 24px; }
+      .roi-vs { transform: rotate(90deg); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="https://adventuringghost.com" class="nav-logo">
+      AdventuringGhost<span>.com</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#what-it-does">What it does</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#pipeline">Pipeline</a></li>
+      <li><a href="#challenges">Challenges</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="https://github.com/AdventuringGhost/warden">GitHub ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <p class="hero-eyebrow">Case Study · Kubernetes Security · AKS</p>
+    <h1>Warden</h1>
+    <p class="hero-tagline">
+      A self-healing Kubernetes security agent. Warden listens for Falco runtime alerts
+      and OPA Gatekeeper admission violations, triages each incident with Claude Sonnet AI,
+      auto-patches low-severity threats, and drafts remediation runbooks for anything
+      requiring a human decision.
+    </p>
+
+    <div class="hero-meta">
+      <div class="hero-stat">
+        <span class="hero-stat-value">~$2</span>
+        <span class="hero-stat-label">Total cloud spend</span>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">2-layer</span>
+        <span class="hero-stat-label">Security coverage</span>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">E2E</span>
+        <span class="hero-stat-label">AKS pipeline proven</span>
+      </div>
+    </div>
+
+    <div class="badge-row">
+      <span class="badge badge-cyan">Python</span>
+      <span class="badge badge-cyan">FastAPI</span>
+      <span class="badge badge-cyan">Kubernetes / AKS</span>
+      <span class="badge badge-purple">Falco</span>
+      <span class="badge badge-purple">OPA Gatekeeper</span>
+      <span class="badge badge-yellow">Claude Sonnet 4.6</span>
+      <span class="badge badge-yellow">Azure Key Vault</span>
+      <span class="badge badge-green">Prometheus</span>
+      <span class="badge badge-green">Terraform</span>
+      <span class="badge badge-orange">Azure DevOps</span>
+    </div>
+
+    <div class="hero-ctas">
+      <a href="https://github.com/AdventuringGhost/warden" class="btn btn-primary">
+        ↗ View on GitHub
+      </a>
+      <a href="https://adventuringghost.com" class="btn btn-outline">
+        ← Back to portfolio
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── What it does ───────────────────────────────────────────── -->
+<section id="what-it-does">
+  <div class="container">
+    <p class="label">What it does</p>
+    <h2>Threat detection to auto-remediation in one pipeline</h2>
+    <p>
+      Warden is a Python FastAPI webhook server that sits between your Kubernetes security
+      tooling and your on-call engineer. It receives alerts from two sources, classifies
+      them with an AI model, and acts — so routine incidents resolve themselves and humans
+      only get paged when it genuinely matters.
+    </p>
+
+    <div class="flow-steps" style="margin-top: 40px;">
+      <div class="flow-step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Receive alerts</h3>
+          <p>
+            Falco streams runtime security events (shell spawns, privilege escalation,
+            suspicious syscalls) via Falcosidekick to Warden's <span class="mono">/webhook</span>
+            endpoint. OPA Gatekeeper admission violations feed the same pipeline.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>Triage with Claude Sonnet</h3>
+          <p>
+            Warden sends the structured alert payload to Claude Sonnet 4.6 with a
+            system prompt that defines severity rubrics and response policy. Claude
+            returns a severity classification (<strong>low / medium / high</strong>)
+            and a structured remediation recommendation.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">03</div>
+        <div class="step-body">
+          <h3>Act on severity</h3>
+          <p>
+            <strong class="text-green">Low severity</strong> — Warden auto-patches
+            the affected workload immediately (pod restart, label quarantine, network
+            policy application) and logs the action.<br /><br />
+            <strong class="text-yellow">High severity</strong> — Warden drafts a
+            plain-language remediation runbook and surfaces it for human review.
+            No automated action is taken until a human approves.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>Observe and audit</h3>
+          <p>
+            All triage decisions and patch actions are emitted as Prometheus metrics.
+            Every AI decision is logged with the original alert payload, Claude's
+            reasoning, the action taken, and a timestamp — giving a complete audit
+            trail for post-incident review.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Architecture ───────────────────────────────────────────── -->
+<section id="architecture">
+  <div class="container">
+    <p class="label">Architecture</p>
+    <h2>Two-layer security on AKS</h2>
+    <p>
+      Warden enforces security at two distinct points in the Kubernetes lifecycle:
+      before a workload is admitted to the cluster, and while it is running.
+      Together they cover the full threat surface — misconfigurations that would
+      never even reach production, and adversarial behaviour that only appears at runtime.
+    </p>
+
+    <div class="arch-diagram">
+      <div class="arch-header">
+        <span class="arch-dot" style="background:#f87171;"></span>
+        <span class="arch-dot" style="background:#fbbf24;"></span>
+        <span class="arch-dot" style="background:#4ade80;"></span>
+        <span>warden · architecture overview</span>
+      </div>
+      <div class="arch-layers">
+
+        <div class="arch-layer arch-layer-cyan">
+          <div class="arch-layer-icon">🛡️</div>
+          <div>
+            <div class="arch-layer-label">Layer 1 — OPA Gatekeeper (Admission)</div>
+            <p>
+              Intercepts every API call to the Kubernetes control plane before the object
+              is persisted. Enforces <strong>ConstraintTemplates</strong> written in Rego:
+              blocks privileged containers, restricts image registries to verified sources,
+              rejects non-root violations. If the manifest fails a constraint, the pod
+              never reaches a node.
+            </p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓ workloads that pass admission</div>
+
+        <div class="arch-layer arch-layer-purple">
+          <div class="arch-layer-icon">👁️</div>
+          <div>
+            <div class="arch-layer-label">Layer 2 — Falco (Runtime)</div>
+            <p>
+              Runs as a privileged DaemonSet on every node. Uses eBPF kernel probes
+              to watch every syscall in real time. Detects shell spawns inside containers,
+              privilege escalation attempts, unexpected network connections, and file
+              system tampering. Events are forwarded to Warden via
+              <strong>Falcosidekick</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓ events forwarded to webhook</div>
+
+        <div class="arch-layer arch-layer-yellow">
+          <div class="arch-layer-icon">🤖</div>
+          <div>
+            <div class="arch-layer-label">Warden — FastAPI Webhook + Claude Sonnet</div>
+            <p>
+              Receives the alert, structures it into a prompt, and queries Claude Sonnet 4.6
+              for triage. Claude returns severity + remediation recommendation. Warden
+              applies the decision: auto-patch for low-severity, runbook draft for high-severity.
+              API keys stored in <strong>Azure Key Vault</strong>, injected at runtime.
+            </p>
+          </div>
+        </div>
+
+        <div class="arch-arrow">↓ metrics emitted</div>
+
+        <div class="arch-layer arch-layer-green">
+          <div class="arch-layer-icon">📊</div>
+          <div>
+            <div class="arch-layer-label">Observability — Prometheus</div>
+            <p>
+              Custom metrics track alert volume by severity, auto-patch success/failure rate,
+              Claude API latency, and runbook generation count. Scraped by the cluster's
+              Prometheus instance and queryable for post-incident analysis.
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Proven pipeline ────────────────────────────────────────── -->
+<section id="pipeline">
+  <div class="container">
+    <p class="label">Proven pipeline</p>
+    <h2>End-to-end on AKS — verified</h2>
+    <p>
+      This is the exact sequence that ran on a live AKS cluster and returned
+      <strong class="text-green">HTTP 200</strong>. Not a local simulation — a real
+      Kubernetes cluster, real eBPF probes, real AI triage, real patch applied.
+    </p>
+
+    <div class="pipeline">
+      <div class="pipeline-header">
+        <span class="pipeline-title">aks-cluster · warden · event trace</span>
+        <span class="status-pill status-pill-green">
+          <span class="status-dot"></span>
+          Verified end-to-end
+        </span>
+      </div>
+
+      <div class="pipeline-steps">
+        <div class="pipe-step">
+          <div class="pipe-icon pipe-icon-purple">👁️</div>
+          <div class="pipe-body">
+            <h4>Falco detects shell spawn</h4>
+            <p>eBPF probe fires on <span class="mono text-muted">execve</span> syscall inside a running container.
+            Falco matches rule <span class="mono text-muted">Terminal shell in container</span> and emits an event.</p>
+          </div>
+        </div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon pipe-icon-cyan">📡</div>
+          <div class="pipe-body">
+            <h4>Falcosidekick forwards to Warden</h4>
+            <p>Falcosidekick POSTs the structured JSON alert to Warden's
+            <span class="mono text-muted">http://warden-service/webhook</span> endpoint inside the cluster.</p>
+          </div>
+        </div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon pipe-icon-yellow">🤖</div>
+          <div class="pipe-body">
+            <h4>Claude triages → severity: low</h4>
+            <p>Warden sends the payload to Claude Sonnet 4.6. Claude returns
+            <span class="mono text-muted">severity=low</span> — shell spawn in a dev namespace,
+            no privilege escalation, known image. Auto-patch authorised.</p>
+          </div>
+        </div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon pipe-icon-green">🔧</div>
+          <div class="pipe-body">
+            <h4>Auto-patch applied</h4>
+            <p>Warden applies the patch (pod restart with quarantine label). Action logged
+            with full Claude reasoning, alert payload, and timestamp.</p>
+          </div>
+        </div>
+
+        <div class="pipe-step">
+          <div class="pipe-icon pipe-icon-green">✅</div>
+          <div class="pipe-body">
+            <h4>HTTP 200 — pipeline complete</h4>
+            <p>Warden returns <span class="mono text-muted">200 OK</span> to Falcosidekick.
+            Prometheus metrics updated. Incident resolved autonomously in under 3 seconds.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Project visuals ────────────────────────────────────────── -->
+<section id="visuals">
+  <div class="container">
+    <p class="label">Project visuals</p>
+    <h2>Evidence from the cluster</h2>
+    <p>
+      Screenshots from the live AKS environment — the pipeline running, not a diagram of it.
+    </p>
+
+    <div class="screenshot-grid">
+      <div class="screenshot-slot">
+        <img src="/images/OPA%20constraint%20blocking%20privileged%20container.png" alt="OPA Gatekeeper constraint blocking a privileged container at admission" />
+        <div class="screenshot-caption">Layer 1 — OPA Gatekeeper constraint blocking a privileged container at admission. The pod never reaches a node.</div>
+      </div>
+
+      <div class="screenshot-slot">
+        <img src="/images/Falco%20event%20detected%20in%20AKS%20cluster.png" alt="Falco runtime security event detected in the AKS cluster" />
+        <div class="screenshot-caption">Layer 2 — Falco eBPF probe fires on a shell spawn inside a running container. This is the event that triggered the end-to-end pipeline test.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Challenges ─────────────────────────────────────────────── -->
+<section id="challenges">
+  <div class="container">
+    <p class="label">Challenges &amp; fixes</p>
+    <h2>Real problems. Root causes. Actual fixes.</h2>
+    <p>
+      Every one of these was a real blocker hit during development on a live cluster.
+      The fixes are in the repo. The lessons are below.
+    </p>
+
+    <div class="card-grid" style="margin-top: 40px; gap: 20px;">
+
+      <!-- Challenge 1 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">01</div>
+          <div class="challenge-title">OPA blocked Falco's own DaemonSet</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              The <span class="mono">AllowedImageRegistries</span> and
+              <span class="mono">BlockPrivilegedContainers</span> constraints were
+              cluster-wide. Falco itself runs as a privileged container pulling from
+              Docker Hub — so OPA denied its own DaemonSet pods before they could start.
+              Falco was silently blocked by the security layer it was supposed to complement.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Added a namespace exclusion to both ConstraintTemplates: the
+              <span class="mono">falco</span> namespace is exempted from the privileged
+              container and registry constraints. Constraints still enforce everywhere else.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Security tooling often needs elevated permissions to do its job. Namespace-scoped
+              exclusions are the right pattern — blanket constraint relaxation is not.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 2 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">02</div>
+          <div class="challenge-title">WSL2 eBPF limitations blocked local Falco detection</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              Falco's eBPF probe requires access to kernel tracepoints. WSL2 runs a
+              modified kernel that strips many of these, so local Falco test runs
+              produced no events — making it impossible to validate the pipeline locally
+              before deploying to AKS.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Documented the WSL2 limitation clearly and moved end-to-end pipeline
+              validation to AKS from the outset. Local dev used mocked webhook payloads
+              for Warden unit testing; real eBPF detection was only validated on-cluster.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Know which parts of your stack require real hardware. Design your local
+              dev loop around that constraint rather than fighting it.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 3 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">03</div>
+          <div class="challenge-title">AllowedImageRegistries schema validation errors</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              The parameterised ConstraintTemplate for <span class="mono">AllowedImageRegistries</span>
+              used a CRD schema with an <span class="mono">openAPIV3Schema</span> for the
+              <span class="mono">parameters.registries</span> field. OPA Gatekeeper rejected
+              the schema on certain AKS versions due to validation webhook conflicts between
+              the CRD admission controller and Gatekeeper's own webhook.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Removed the parameterised schema entirely. Hardcoded the allowed registries
+              directly into the Rego policy. Fewer moving parts, no schema validation
+              surface, and the policy is easier to audit at a glance.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Parameterised OPA constraints add flexibility but also a schema validation
+              layer that can fail unpredictably across Kubernetes versions. For a small
+              known-registry list, inline Rego is simpler and more reliable.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 4 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">04</div>
+          <div class="challenge-title">Agent code not present in the container image</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              The Warden webhook server needed to run inside the cluster but publishing a
+              private container image for every dev iteration was too slow. The agent code
+              was not baked into any available image.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Mounted the agent source code as a Kubernetes ConfigMap and ran it via a
+              base Python image. The pod pulls the code from the ConfigMap at startup
+              and executes it — no custom image build required for development iterations.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              ConfigMap-mounted code is a legitimate pattern for rapid iteration on
+              cluster-internal tooling. It trades image immutability for development
+              speed — acceptable for a dev/staging context, not for production.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 5 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">05</div>
+          <div class="challenge-title">Corrupted API key in environment variable</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              The Claude API key injected from Azure Key Vault into the pod's environment
+              was being silently corrupted — extra whitespace or encoding artefacts caused
+              every Claude API call to return 401 Unauthorized. The key looked valid in
+              the logs but was not.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Detected the corruption, rotated the key immediately, and added an explicit
+              strip-and-validate step in the Warden startup code that reads the key,
+              strips whitespace, checks length, and fails fast with a clear error if the
+              key does not look valid before accepting any traffic.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Secrets injected from external vaults can be corrupted in transit. Always
+              validate secrets at application startup, rotate immediately on detection,
+              and treat 401s from downstream APIs as a secret-validity signal, not just
+              an auth error.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── What this demonstrates ─────────────────────────────────── -->
+<section id="demonstrates">
+  <div class="container">
+    <p class="label">What this demonstrates</p>
+    <h2>Skills proven on a live cluster</h2>
+
+    <div class="demonstrates-grid">
+      <div class="demo-card">
+        <div class="demo-icon">☸️</div>
+        <h3>Kubernetes operations</h3>
+        <p>AKS cluster provisioned with Terraform. DaemonSets, ConfigMaps, Services,
+        and namespace-scoped RBAC configured from scratch. OPA Gatekeeper and Falco
+        integrated as cluster-wide security layers.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🛡️</div>
+        <h3>Defence-in-depth security</h3>
+        <p>Two independent enforcement points — admission control (OPA) and runtime
+        detection (Falco) — with intentional separation of concerns. Policy written
+        in Rego; detection rules tuned to minimise false positives.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🤖</div>
+        <h3>AI-driven automation</h3>
+        <p>Claude Sonnet 4.6 used for structured triage — not a chatbot wrapper, but
+        a decision-making component in a security pipeline with defined inputs,
+        constrained outputs, and human approval gates for high-severity actions.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🔑</div>
+        <h3>Secrets management</h3>
+        <p>API keys stored in Azure Key Vault and injected at runtime. Rotation
+        documented as an operational procedure. Startup validation ensures corrupted
+        secrets are caught before the service accepts traffic.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">📊</div>
+        <h3>Observability</h3>
+        <p>Custom Prometheus metrics for alert volume, triage latency, and patch
+        outcomes. Every AI decision logged with the full reasoning chain — readable
+        audit trail for post-incident review.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🏗️</div>
+        <h3>Infrastructure as code</h3>
+        <p>Terraform provisions the AKS cluster and supporting Azure resources.
+        Kubernetes manifests in version control. Full pipeline deployable from
+        a clean Azure subscription with a single plan/apply.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── What I'd do differently ────────────────────────────────── -->
+<section id="differently">
+  <div class="container">
+    <p class="label">Retrospective</p>
+    <h2>What I'd do differently</h2>
+    <p>
+      Honest engineering means knowing what the next iteration looks like.
+    </p>
+
+    <div class="diff-list">
+      <div class="diff-item">
+        <span class="diff-arrow">→</span>
+        <p>
+          <strong>Build the container image from the start.</strong> The ConfigMap
+          pattern was useful for rapid iteration but should be replaced with a proper
+          CI pipeline that builds and pushes a versioned image on every commit. The
+          Azure DevOps pipeline is already set up — this is the natural next step.
+        </p>
+      </div>
+
+      <div class="diff-item">
+        <span class="diff-arrow">→</span>
+        <p>
+          <strong>Add human approval UX for high-severity runbooks.</strong> Right now,
+          runbooks are drafted and logged. A production version needs a way to surface
+          them — a Slack notification, a GitHub issue, a webhook to a ticketing system —
+          so human review actually happens in a real workflow, not just in the logs.
+        </p>
+      </div>
+
+      <div class="diff-item">
+        <span class="diff-arrow">→</span>
+        <p>
+          <strong>Test Falco rule tuning before going to AKS.</strong> Some detection
+          rules were too broad initially and generated noise. With WSL2 limitations
+          documented upfront, the right move is to invest earlier in local mock payload
+          testing and rule refinement before spending cluster time chasing false positives.
+        </p>
+      </div>
+
+      <div class="diff-item">
+        <span class="diff-arrow">→</span>
+        <p>
+          <strong>Secret validation on every startup, not just after a 401.</strong>
+          The corrupted API key was caught reactively. A startup health check that
+          validates secret format and makes a test API call before marking the pod
+          Ready would catch this class of issue before any real traffic arrives.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Real-world value ───────────────────────────────────────── -->
+<section id="value">
+  <div class="container">
+    <p class="label">Real-world value</p>
+    <h2>What this costs. What it replaces.</h2>
+    <p>
+      Warden isn't a research project. These are real numbers for running it in production —
+      and what it displaces on the other side of the ledger.
+    </p>
+
+    <!-- Cost table -->
+    <div style="margin-top: 48px;">
+      <p class="label" style="margin-bottom: 8px;">Monthly cost breakdown</p>
+
+      <div class="cost-table-wrap">
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th class="col-personal">Personal / Portfolio</th>
+              <th class="col-team">Small Team</th>
+              <th class="col-ent">Enterprise</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>AKS VM nodes<br><span style="color:var(--text-dim);font-size:.72rem;">Standard_B2s</span></td>
+              <td>$17 <span style="color:var(--text-dim);font-size:.78rem;">/ 1 node</span></td>
+              <td>$17 <span style="color:var(--text-dim);font-size:.78rem;">/ 1 node</span></td>
+              <td>$35 <span style="color:var(--text-dim);font-size:.78rem;">/ 3 nodes</span></td>
+            </tr>
+            <tr>
+              <td>Claude Sonnet 4.6 API<br><span style="color:var(--text-dim);font-size:.72rem;">per-token, varies with alert volume</span></td>
+              <td>$7</td>
+              <td>$10</td>
+              <td>$20</td>
+            </tr>
+            <tr>
+              <td>Azure Key Vault<br><span style="color:var(--text-dim);font-size:.72rem;">operations + secret storage</span></td>
+              <td>$1</td>
+              <td>$1</td>
+              <td>$1</td>
+            </tr>
+            <tr>
+              <td>Log Analytics<br><span style="color:var(--text-dim);font-size:.72rem;">ingestion at ~1–5 GB/day</span></td>
+              <td>$7</td>
+              <td>$4</td>
+              <td>$11</td>
+            </tr>
+            <tr>
+              <td>Monthly total</td>
+              <td>~$32 / mo</td>
+              <td>~$32 / mo</td>
+              <td>~$67 / mo</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cost-note">Estimates based on Azure Canada Central pricing, April 2026. Claude API cost scales with alert volume — low-traffic clusters run lower.</div>
+      </div>
+    </div>
+
+    <!-- Industry use cases -->
+    <div style="margin-top: 56px;">
+      <p class="label" style="margin-bottom: 8px;">Industry use cases</p>
+      <h3 style="font-size:1.1rem; margin-bottom: 6px; color: var(--text);">The same architecture, applied to real problems</h3>
+      <p style="margin-bottom: 0;">Three industries where Warden's two-layer model addresses actual regulatory and operational risk.</p>
+
+      <div class="industry-grid">
+        <div class="industry-card">
+          <div class="industry-icon">💳</div>
+          <div class="industry-name">Fintech</div>
+          <h3>Trading platform Kubernetes cluster</h3>
+          <ul>
+            <li>Auto-recover payment-processing pods that restart unexpectedly — zero human intervention at 3 AM</li>
+            <li>Block privilege escalation attempts on pods handling PCI-scoped workloads before they reach a node</li>
+            <li>Detect unusual shell spawns inside transaction-processor containers and quarantine immediately</li>
+            <li>Audit trail per AI decision satisfies SOC 2 Type II evidence requirements</li>
+          </ul>
+        </div>
+
+        <div class="industry-card">
+          <div class="industry-icon">🏥</div>
+          <div class="industry-name">Healthtech</div>
+          <h3>EHR system running on AKS</h3>
+          <ul>
+            <li>Enforce no-root policy on every pod touching patient data — OPA blocks non-compliant workloads at admission</li>
+            <li>Detect lateral movement between pods in different HIPAA data classifications</li>
+            <li>Auto-draft runbooks for high-severity events so the security team reviews, not guesses</li>
+            <li>HIPAA audit logs generated automatically from Prometheus + triage audit trail</li>
+          </ul>
+        </div>
+
+        <div class="industry-card">
+          <div class="industry-icon">🏭</div>
+          <div class="industry-name">Manufacturing</div>
+          <h3>SCADA orchestration on Kubernetes</h3>
+          <ul>
+            <li>Monitor industrial control pods for unexpected process execution or network connections</li>
+            <li>Auto-isolate compromised nodes before a threat can propagate to physical control systems</li>
+            <li>Block unverified container images from reaching the production SCADA namespace</li>
+            <li>Operator runbook generation reduces dependency on scarce OT security expertise</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration modes -->
+    <div style="margin-top: 56px;">
+      <p class="label" style="margin-bottom: 8px;">Legacy integration</p>
+      <h3 style="font-size:1.1rem; margin-bottom: 6px; color: var(--text);">Works with what you already have</h3>
+      <p style="margin-bottom: 0;">Warden installs alongside existing workloads. No changes to running services.</p>
+
+      <div class="integration-grid">
+        <div class="integration-card">
+          <div class="integration-mode integration-mode-cyan">Drop-in</div>
+          <div class="integration-timeline">⏱ 2–5 days</div>
+          <h3>Any existing Kubernetes cluster</h3>
+          <p>
+            Warden installs into your existing cluster via Helm. Zero changes to running workloads.
+            Falco and OPA Gatekeeper deploy as independent DaemonSet and webhook — they wrap
+            around everything already scheduled.
+          </p>
+          <div class="integration-steps">
+            <div class="integration-step">
+              <div class="integration-step-num">1</div>
+              <span>helm install warden ./chart — deploys Warden, Falco, Gatekeeper</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">2</div>
+              <span>Configure namespace exclusions for any privileged system workloads</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">3</div>
+              <span>Store Claude API key in Key Vault, wire Falcosidekick to Warden webhook</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">4</div>
+              <span>Verify pipeline with a synthetic shell-spawn test event</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="integration-card">
+          <div class="integration-mode integration-mode-green">Wrap-around</div>
+          <div class="integration-timeline">⏱ 2–4 weeks</div>
+          <h3>Existing systemd or VM-based services</h3>
+          <p>
+            For services not yet on Kubernetes, a lightweight migration wraps each systemd
+            service in a Kubernetes pod without changing its runtime behaviour. Warden then
+            provides security coverage across both old and new workloads from day one.
+          </p>
+          <div class="integration-steps">
+            <div class="integration-step">
+              <div class="integration-step-num">1</div>
+              <span>Containerise each service (same binary, same config, minimal Dockerfile)</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">2</div>
+              <span>Deploy to AKS alongside existing workloads — no traffic cut-over yet</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">3</div>
+              <span>Install Warden, run both stacks in parallel, validate behaviour</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">4</div>
+              <span>Cut traffic over service by service on your own timeline</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ROI banner -->
+    <div style="margin-top: 56px;">
+      <p class="label" style="margin-bottom: 8px;">Return on investment</p>
+
+      <div class="roi-banner">
+        <div class="roi-block">
+          <div class="roi-value roi-value-cyan">~$67</div>
+          <div class="roi-value-label">/ month<br>Warden enterprise</div>
+        </div>
+
+        <div class="roi-vs">vs.</div>
+
+        <div class="roi-block">
+          <div class="roi-value roi-value-red">$8–15k</div>
+          <div class="roi-value-label">/ month<br>On-call SRE coverage</div>
+        </div>
+
+        <div class="roi-body">
+          <h3>Nights and weekends, covered</h3>
+          <p>
+            An on-call SRE for nights, weekends, and holidays costs
+            <strong>$8,000–$15,000 per month</strong> in fully-loaded compensation —
+            and they still need sleep. Warden runs 24/7, triages every alert in seconds,
+            auto-resolves the low-severity majority, and only wakes a human for
+            incidents that genuinely require judgment. At ~$67/mo for enterprise,
+            the ROI case writes itself.
+          </p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Portfolio arc ──────────────────────────────────────────── -->
+<section class="arc-section" id="arc">
+  <div class="container">
+    <p class="label">Portfolio arc</p>
+    <h2>Building toward Watershed</h2>
+    <p>
+      Each project in this arc is a deliberate step: establish cloud and AI
+      fundamentals, prove security automation on Kubernetes, compose those skills
+      into a multi-agent system, then apply them to a data-at-rest problem.
+    </p>
+
+    <div class="arc-grid">
+
+      <div class="arc-card arc-card-live">
+        <div class="arc-project-num">Project 01</div>
+        <div class="arc-project-name">Email Agent</div>
+        <div class="arc-project-desc">
+          Azure VM + Claude Sonnet reading, triaging, and drafting replies
+          to Gmail. DevSecOps foundations: Terraform, Key Vault, IaC.
+        </div>
+        <span class="arc-status arc-status-live">Live</span>
+      </div>
+
+      <div class="arc-card arc-card-live">
+        <div class="arc-project-num">Project 02</div>
+        <div class="arc-project-name">Warden</div>
+        <div class="arc-project-desc">
+          Self-healing Kubernetes security agent. Falco + OPA + Claude on AKS.
+          AI triage, auto-patch, and runbook generation.
+        </div>
+        <span class="arc-status arc-status-live">Live</span>
+      </div>
+
+      <div class="arc-card arc-card-planned">
+        <div class="arc-project-num">Project 03</div>
+        <div class="arc-project-name">Covenant</div>
+        <div class="arc-project-desc">
+          Multi-agent policy enforcement system. Agents that negotiate,
+          audit, and escalate across cloud boundaries.
+        </div>
+        <span class="arc-status arc-status-planned">Planned</span>
+      </div>
+
+      <div class="arc-card arc-card-planned">
+        <div class="arc-project-num">Project 04</div>
+        <div class="arc-project-name">Watershed</div>
+        <div class="arc-project-desc">
+          Data security and governance platform. Everything that came before,
+          applied to protecting data at rest and in motion.
+        </div>
+        <span class="arc-status arc-status-planned">Planned</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <p>
+      Built by <a href="https://adventuringghost.com">Skipper</a> ·
+      <a href="https://github.com/AdventuringGhost/warden">github.com/AdventuringGhost/warden</a> ·
+      <a href="https://adventuringghost.com">adventuringghost.com</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
