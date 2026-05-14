@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Menu, X, ChevronDown } from "lucide-react";
 
 interface NavItem {
@@ -23,7 +23,10 @@ export const Nav = ({ navItems = [] }: NavProps) => {
       : [
           { href: "/", label: "Home" },
           { href: "/#projects", label: "Projects" },
+          { href: "/architecture", label: "Architecture" },
+          { href: "/blog", label: "Blog" },
           { href: "/#contact", label: "Contact" },
+          { href: "/resume.pdf", label: "Resume", external: true },
         ];
 
   // Effect to close the mobile menu on window resize. Runs once on mount.

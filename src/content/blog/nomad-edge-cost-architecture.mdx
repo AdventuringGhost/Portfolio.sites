@@ -1,0 +1,35 @@
+There's a question every cloud architect eventually has to answer honestly: are you choosing the right tool, or the familiar one? When I built Nomad Edge — a Single Cluster Distant Client edge platform for rural infrastructure — I made a series of choices that looked unconventional on paper. SNS instead of Kinesis. HashiCorp Nomad instead of EKS. Packer-built AMIs instead of pure container images. Every one of those choices had a cost and complexity rationale that I want to document here, because the reasoning matters as much as the outcome.
+
+## The baseline: what rural edge actually means
+
+Rural edge deployments aren't just "cloud but slower." They're a fundamentally different operational model. Network partitions aren't incidents — they're scheduled events. Bandwidth is metered and expensive. The person closest to a failing node might be an agricultural worker, not an on-call engineer. That context changes every architectural decision downstream.
+
+When I set the constraint "this system must operate during a network partition and recover cleanly on reconnect," a lot of expensive AWS services immediately fell off the list.
+
+## SNS over Kinesis: ~$0.00 vs ~$15/month minimum
+
+Kinesis Data Streams has a minimum cost of one shard at roughly $15/month regardless of traffic, plus $0.014 per million PUT payload units. For a rural edge topology with bursty, low-volume telemetry from a small number of edge nodes, you're paying the shard floor every month whether you use it or not.
+
+SNS fan-out to SQS costs $0.50 per million publishes. At the telemetry volumes Nomad Edge is designed for — dozens to low hundreds of messages per hour from edge nodes — the monthly cost rounds to zero. The tradeoff is that SNS/SQS lacks Kinesis's ordered replay and retention window. For this use case that's acceptable: the edge node itself holds the authoritative local buffer (SQLite in Watershed's case), and cloud sync is eventual consistency, not a streaming source of truth.
+
+The decision: SNS wins for bursty low-volume rural telemetry. Kinesis wins when you need ordered replay, consumer groups, or streaming analytics at scale. Know which one you're actually building.
+
+## Nomad over EKS: operational simplicity at the edge
+
+EKS is excellent. It's also a managed control plane, a node group, a VPC CNI plugin, load balancers, and IAM roles for service accounts — minimum viable cluster is six to eight Terraform resources before you've deployed a single workload. At roughly $0.10/hour for the control plane alone, a dev/test cluster costs ~$72/month just to exist.
+
+Nomad's Single Cluster Distant Client topology runs a three-node server cluster and any number of client nodes that can be geographically distant and intermittently connected. The entire control plane is a single binary. A minimal Nomad cluster on t3.micro instances costs under $10/month. More importantly, Nomad clients handle network interruption gracefully — a client that loses connectivity to the server cluster continues running its existing allocations. An EKS node that loses control plane connectivity is a more complex failure scenario.
+
+For edge deployments where nodes might be physically remote, connectivity is unreliable, and operational simplicity matters, Nomad's SCDC topology is the right model. EKS is the right model when you need the Kubernetes ecosystem, Helm charts, and the operator pattern.
+
+## Packer AMIs over pure container images: the immutable baseline
+
+The standard modern answer is "just use containers." For a pure cloud deployment that's correct. For edge nodes that need a verified, pre-hardened baseline that can be re-imaged from scratch after a compromise or hardware replacement, a Packer-built AMI gives you something a container image doesn't: a complete, auditable machine state from first boot.
+
+The Nomad Edge AMI pipeline bakes the Nomad agent, WireGuard configuration, and base tooling into an AMI at build time. A replacement node comes up pre-configured, joins the cluster, and starts accepting allocations — no bootstrap scripts, no configuration drift, no "it worked on the last node" debugging. The cost of maintaining the AMI pipeline is an occasional packer build run. The benefit is a reproducible edge node baseline you can reason about.
+
+## The real lesson: cost discipline is an architectural forcing function
+
+The Deploy-Prove-Destroy approach I use across all projects — where total cloud spend across all sessions must stay under $2 for a portfolio project — isn't a budget constraint. It's a discipline that forces every architectural decision to be justified. If a service costs money to exist, you need a reason to run it. That pressure produces leaner, more defensible architectures than "spin it up and we'll optimize later" ever does.
+
+The Nomad Edge stack costs approximately $8–12/month to run continuously at minimal scale. The equivalent EKS + Kinesis stack would be $80–100/month before you've processed a single real workload. For a rural cooperative, a small agricultural operation, or a remote community — the organizations this architecture is actually designed for — that cost difference isn't a rounding error. It's the difference between a system they can afford to run and one they can't.

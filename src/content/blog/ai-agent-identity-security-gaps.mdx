@@ -1,0 +1,117 @@
+There's a gap opening up in enterprise security architecture that most organizations haven't named yet, even as they're already exposed to it.
+
+Identity systems — the infrastructure that controls authentication, authorization, and visibility across a business — were designed for humans. A user logs in with credentials. A role is assigned. Access is granted or denied based on that role. The audit log records what that user did. The mental model is a person sitting at a keyboard, making decisions, taking actions.
+
+AI agents don't fit that model. They authenticate programmatically. They act continuously, not in sessions. They can hold permissions that were granted for one purpose and exercise them in another context without any human noticing. They don't get tired, don't forget to log out, and don't think to ask whether a particular action is appropriate — they execute whatever their design and permissions allow.
+
+For a business evaluating AI initiatives, that mismatch between how identity systems were built and how AI agents actually operate is not a theoretical risk. It's a specific set of gaps in authentication, authorization, and visibility that need to be addressed before autonomous agents are operating in any environment that touches sensitive data or critical systems.
+
+---
+
+## The three gaps
+
+### Authentication: proving identity for something that isn't a person
+
+Human authentication is built around secrets — passwords, MFA codes, hardware tokens — that a specific person possesses. The assumption is that if you have the secret, you are who you claim to be.
+
+AI agents authenticate with API keys, service tokens, or client credentials. These are secrets too, but the risk profile is different. A human credential is hard to steal without the person noticing. An API key embedded in application code, stored in an environment variable, or present in a deployment configuration can be exfiltrated silently. It doesn't expire unless you rotate it. It doesn't require the "person" to be present to use it. And if it's compromised, it can be used indefinitely until someone notices — which may be never, if no one is monitoring for anomalous API usage.
+
+The authentication gap for AI agents is not just about keeping secrets safe. It's about the entire lifecycle of non-human credentials: how they're issued, where they're stored, how long they're valid, how they're rotated, and how quickly they can be revoked if something goes wrong.
+
+### Authorization: access that was granted for one thing and used for another
+
+Authorization for human users is imperfect but comprehensible. A person in the finance team has access to financial systems. If they try to access the engineering deployment pipeline, the access control system blocks them. The permission boundary reflects the job role.
+
+AI agents are harder to scope. An agent designed to handle customer support queries might be given read access to the CRM, write access to the ticketing system, and the ability to send emails on behalf of the support team. That seems reasonable for its intended purpose. But that same permission set — if the agent is compromised, misbehaving, or simply given an ambiguous instruction — allows it to read customer data, modify support records, and send communications under the company's name. The permissions weren't designed to be dangerous, but they're combinable in ways that weren't anticipated.
+
+The authorization gap is the gap between what an agent was designed to do and what it is technically capable of doing given its permission set. In human systems, job roles and access rights are usually reviewed together. In AI agent deployments, this review rarely happens with the same rigor.
+
+### Visibility: the audit trail that doesn't exist
+
+Human activity generates a readable audit trail. A login event, a file access, a configuration change — these are tied to a named identity and a timestamp. When something goes wrong, you can reconstruct what happened and who did it.
+
+AI agent activity is harder to trace. If multiple services share a single API key, the audit log shows the key, not the agent. If an agent takes action through a chained sequence of API calls, the individual calls may be logged but the causal chain — why this action, at this time, in response to what input — may not be. If an agent operates across multiple systems, the events are spread across multiple logs that no one has connected.
+
+The visibility gap means that when an AI agent does something unexpected — and at sufficient scale and complexity, it will — the investigation is harder than it would be for a human actor. The question "what did this agent do and why?" can be genuinely difficult to answer without deliberate architectural investment in agent-specific audit logging.
+
+---
+
+## Efficient solutions
+
+### Short-lived, scoped credentials over long-lived API keys
+
+The most direct response to the authentication gap is eliminating long-lived API keys as the default credential for AI agents. Long-lived keys are a liability: they don't expire, they can be exfiltrated silently, and revoking them requires knowing they've been compromised.
+
+The alternative is short-lived credentials issued at runtime via a secrets management system — Azure Key Vault, AWS Secrets Manager, HashiCorp Vault — combined with managed identity where the platform supports it. A managed identity credential is issued by the cloud platform to a specific workload, scoped to that workload's identity, and tied to its lifecycle. The agent doesn't hold a static secret; the platform vouches for it.
+
+Where managed identity isn't available, the next best option is a secrets manager with automatic rotation. The credential the agent uses today is different from the one it used last week. If one is exfiltrated, the exposure window is bounded.
+
+The operational ask is straightforward: audit your current AI agent deployments for long-lived static credentials. Every one you find is a risk that can be reduced without changing anything about how the agent functions.
+
+### Least-privilege authorization with explicit scope review
+
+The authorization gap closes when agent permissions are scoped to what the agent actually needs to do, reviewed as a unit, and revisited when the agent's function changes.
+
+Practically, this means building a permission inventory for each AI agent in your environment — not just "what access does this service account have?" but "what is this agent designed to do, and is that the minimum permission set that enables it?" The two questions often have different answers.
+
+A few specific patterns that work:
+
+**Separate service accounts per agent.** Shared credentials across multiple agents collapse your visibility and make least-privilege impossible to enforce. Each agent should authenticate under its own identity, even if the technical overhead is higher.
+
+**Read-only by default.** Any agent that doesn't need to write should not have write permissions. This sounds obvious and is routinely ignored. Review write permissions explicitly and require justification for each one.
+
+**Action-level scoping where the API supports it.** Some APIs allow permission grants at the action level — read customers but not update, create tickets but not delete. Use this granularity. It limits what a compromised or misbehaving agent can do even if its credentials are valid.
+
+**Scheduled permission reviews.** Agent permissions should be reviewed on the same cadence as human access reviews — or more frequently, given how quickly AI agent deployments evolve. What was scoped correctly at deployment can be over-permissioned three months later after the agent's function changed.
+
+### Agent-specific identity, not inherited service account identity
+
+One of the most common shortcuts in AI agent deployment is attaching the agent to an existing service account that already has the necessary permissions. It's faster than creating a new identity, and it works.
+
+The problem is that it makes the agent invisible in the audit trail. The service account may have been used by other systems for years. The logs are now a mix of legitimate historical usage, current service usage, and AI agent activity — indistinguishable unless you've explicitly tagged the agent's calls.
+
+The correct pattern is a dedicated identity per agent, created for the agent and used only by the agent. This isn't just a security improvement — it's an observability improvement. When that identity appears in the audit log, you know it's the agent. When it appears somewhere unexpected, that anomaly is visible rather than buried in noise.
+
+### Structured audit logging designed for agent behavior
+
+Human audit trails answer the question "who did what and when?" Agent audit trails need to answer a harder question: "what instruction did the agent receive, what did it decide to do, and what did it actually do?"
+
+That requires logging at the agent level, not just at the API call level. The implementation looks like this:
+
+Every agent invocation logs: the triggering input (the task or instruction), the reasoning or decision path the agent took, the external actions it initiated, the outcome, and whether any actions were flagged as anomalous by the agent itself. This log lives alongside the infrastructure-level API call logs and connects to them by correlation ID.
+
+This isn't technically complex — it's a structured logging design question. But it has to be built deliberately. The default behavior of most AI frameworks is to log model inputs and outputs at the application level and leave infrastructure-level call logging to the platform. The connection between the two usually isn't made unless someone builds it.
+
+### Circuit breakers and rate limits on autonomous action
+
+Authentication, authorization, and visibility address the structural gaps, but there's a practical safety layer worth adding: limits on how much an AI agent can do in a given window, with automatic suspension when those limits are breached.
+
+A support agent that sends fifty emails a day is normal. One that sends five hundred in an hour is either compromised, receiving an unusual input, or malfunctioning. A rate limit that suspends the agent's email-sending capability and pages the on-call team when that threshold is crossed is a cheap safeguard against a category of failure that authorization controls alone don't prevent.
+
+Circuit breakers — automatic suspension of agent activity when anomalous patterns are detected — are the autonomous equivalent of an account lockout policy. They don't prevent the problem, but they bound it.
+
+---
+
+## The underlying principle
+
+The common thread across all of these solutions is treating AI agents as first-class identities in your security architecture — not as service accounts, not as automation scripts, not as a special case of human user access.
+
+That means issuing them unique identities, scoping their permissions explicitly, logging their activity in a format that captures agent-specific context, and monitoring their behavior against a defined baseline. The tooling to do this exists today. What's usually missing is the organizational decision to apply the same rigor to non-human actors that's already applied to human ones.
+
+For a business evaluating AI initiatives, the security question isn't "is this AI safe to use?" in the abstract. It's "does our identity and access management architecture account for the fact that this agent will be authenticating, making decisions, and taking actions autonomously — and do we have visibility into all of it?"
+
+If the answer to that question is unclear, that's where to start.
+
+---
+
+## Practical starting point
+
+If you're assessing your current exposure rather than designing from scratch, the audit sequence that surfaces the most risk fastest:
+
+1. **Inventory your non-human identities.** Every service account, API key, and bot credential in use. If you don't have this list, you don't know your surface area.
+2. **Flag long-lived credentials.** Any key or token without a rotation policy or expiry is a risk to address.
+3. **Check for shared credentials.** Any credential used by more than one agent or system is an observability and least-privilege problem.
+4. **Review write permissions explicitly.** Every write permission held by an AI agent should have a documented justification.
+5. **Verify audit trail connectivity.** For each AI agent in production, confirm you can reconstruct a complete picture of its recent activity — not just API calls, but the agent context that drove them.
+
+The goal isn't to stop using AI. It's to deploy it in a way that your security posture, your audit trail, and your investors can stand behind.

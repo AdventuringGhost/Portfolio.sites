@@ -1,0 +1,86 @@
+Most ROI conversations about AI start in the wrong place — a vendor deck, a theoretical efficiency multiplier, a headline number that never survives contact with an actual budget. This is the other kind of conversation.
+
+This is about how to build a defensible forecast for AI agent adoption before you've committed to anything, using the same discipline you'd apply to any infrastructure investment.
+
+---
+
+## What "AI agent" actually means for this calculation
+
+Before you can forecast ROI, you need a precise definition of what you're evaluating. An AI agent in a business context is a system that takes a goal, reasons through a set of steps to achieve it, and uses tools — APIs, databases, external services — to act autonomously. That's meaningfully different from an AI assistant that answers questions or drafts emails.
+
+The distinction matters for ROI because agents replace or augment processes, not just interactions. A chatbot saves someone a few minutes of lookup time. An agent can close a support ticket, triage an alert, reconcile an expense report, or draft a compliance report — without a human in the loop for each step.
+
+That's where the real leverage is. And that's what you need to model.
+
+---
+
+## The cost side of the equation
+
+ROI forecasting fails most often on the cost side, because people undercount. The honest cost of deploying an AI agent includes:
+
+**Build or integration cost.** Whether you're building a custom agent pipeline or integrating an off-the-shelf tool, there's engineering time involved. A minimal agent with one or two tools and a well-scoped task might take a few days to build and validate. A multi-step agent with memory, structured output, error handling, and audit logging takes weeks. Count the hours honestly.
+
+**Inference cost.** API-based LLMs are billed per token. A business running thousands of agent invocations per day needs to model this carefully. Use your expected call volume, average prompt and response length, and the per-token rate for your chosen model. Add a margin for prompt engineering overhead — system prompts are often longer than you expect.
+
+**Maintenance cost.** Agents break when upstream APIs change, when edge cases surface in production, and when the model behaviour shifts between versions. Plan for ongoing maintenance at a fraction of the initial build cost per quarter — a rough starting point is 15–20% of build cost annually, but this scales with process complexity.
+
+**Failure cost.** Any autonomous system acting on your behalf introduces the possibility of automated mistakes. Build a cost estimate for the error rate you're willing to accept and what remediation looks like. If the agent sends incorrect data to a downstream system, what does correcting that cost?
+
+---
+
+## The value side of the equation
+
+On the value side, start with time. Pick one process the agent will handle. Estimate:
+
+- Current time cost: how many hours per week does this process consume across all the people involved?
+- Loaded labor rate: what does an hour of that work actually cost the business, fully loaded?
+- Automation rate: what percentage of cases can the agent handle end-to-end without human intervention? Be conservative — 60–80% is realistic for a well-scoped process. 100% is a red flag in your own model.
+
+The formula is simple: `weekly_hours × automation_rate × loaded_hourly_rate × 52` gives you an annual time-value baseline per process.
+
+Beyond time, there are second-order value categories worth including if you can assign numbers to them:
+
+- **Error reduction.** If the current process has a measurable error rate with a measurable remediation cost, and the agent demonstrably reduces that rate, include the delta.
+- **Throughput increase.** If the bottleneck is human bandwidth and the agent removes that bottleneck, model the value of the additional throughput — more tickets closed, more invoices processed, more anomalies caught.
+- **Response latency.** Some processes have a cost of delay. A security alert that takes four hours to triage manually has a different risk profile than one triaged in four seconds. If you can put a number on the cost of that latency gap, include it.
+
+What you should not include: speculative future benefits, AI-driven insights that haven't materialized yet, and productivity multipliers from vendor case studies that don't match your context. Keep the model grounded in your actual numbers.
+
+---
+
+## Building the model
+
+Once you have cost and value estimates, structure a simple three-scenario model:
+
+**Conservative:** 50% of projected automation rate, 120% of projected build cost, no second-order benefits included.
+
+**Base:** Your best honest estimate of automation rate and build cost, one second-order benefit included if you have real data to support it.
+
+**Optimistic:** Full projected automation rate, second-order benefits included, no cost overrun.
+
+Run the payback period calculation for each: `total_cost ÷ monthly_value = months_to_breakeven`. If the conservative scenario breaks even inside 18 months, the investment is defensible. If it only works in the optimistic scenario, the model is telling you something.
+
+---
+
+## What good agent design looks like in practice
+
+The ROI model improves when the agent is scoped correctly from the start. Agents that try to do too much have worse automation rates, higher error rates, and are harder to maintain — all of which hurt the numbers.
+
+The patterns that hold up in practice:
+
+- **One well-defined task per agent.** An agent that triages security alerts should not also be updating dashboards and sending Slack notifications in the same decision loop. Separate concerns.
+- **Structured output.** Agents that return free-form text are harder to route, audit, and integrate. Agents that return structured JSON with a defined schema are predictable and testable.
+- **Audit logging from day one.** Every agent decision should be logged with enough context to reconstruct why it did what it did. This is not optional — it's what makes automation defensible to stakeholders and recoverable when something goes wrong.
+- **Human-in-the-loop for high-stakes actions.** Auto-acting on low-severity, low-consequence decisions is fine. Irreversible or high-impact actions should route to a human approval step until you have enough production data to justify full automation.
+
+These design constraints don't reduce ROI — they protect it by keeping error rates low and maintenance burden manageable.
+
+---
+
+## The honest version of the conclusion
+
+AI agents deliver real ROI in the right context. That context is: a well-scoped, repetitive process with measurable inputs, a reasonable automation rate, and engineering discipline around how the agent is built and maintained.
+
+The businesses that don't get the return they projected are usually the ones that modeled it optimistically, deployed it hastily, and discovered that "automate my operations" is not a scoped agent task.
+
+Build the model with conservative numbers. If it still works, deploy. If it only works with the optimistic numbers, scope the process down until the conservative scenario pencils out. That's the version that actually holds.

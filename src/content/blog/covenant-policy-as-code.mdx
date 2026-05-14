@@ -1,0 +1,45 @@
+There's a category of AI security mistake that's easy to make and hard to recover from: treating the model as the security layer. The pattern looks like this — the system prompt says "only answer questions relevant to the user's department" or "do not reveal information about other tenants." The model tries to comply. A sufficiently creative prompt talks it past the instruction. The model wasn't the right place to put that rule.
+
+Covenant is built on a simple premise: OPA Rego evaluates access before Claude runs. If OPA returns `allow: false`, Claude never sees the request. The AI cannot be prompted around a policy that the AI never participates in enforcing.
+
+## The architecture in one paragraph
+
+A JWT arrives at the FastAPI endpoint. The middleware extracts `role`, `user_id`, and `tenant_id` from the claims and bundles them with the requested resource into an OPA input document. That document is POSTed to the OPA REST server — a Docker sidecar running the Covenant policy package. OPA evaluates `covenant.authz.allow` against the input. If the result is false, FastAPI returns 403 immediately. If the result is true, the request proceeds to the pgvector retrieval layer, which filters by `tenant_id` before embedding search — cross-tenant documents never enter the context window. Claude only runs on requests that cleared both gates.
+
+## Why Rego and not application code
+
+The alternative to OPA Rego is access control logic in the application layer — conditionals in the route handler, permission checks in a service class, a middleware function that reads from a database. That works. It also means access rules are scattered across the codebase, tested only if you write explicit tests for them, and not independently reviewable without understanding the application.
+
+Rego policies are data. They sit in their own files, are evaluated by an independent engine, and can be unit tested with `opa test` in isolation from the application. A policy change is a diff in a `.rego` file — reviewable, approvable, and auditable the same way any other code change is. When an auditor asks "who can access sensitive data," the answer is a Rego file, not a grep through application logic.
+
+The Covenant policy uses `default allow := false` — every identity starts with no permissions, and access is an explicit grant. That's the correct default for a security policy. Opt-out access control (allow everything, deny specific things) has a surface area that grows with every new resource added to the system. Opt-in access control has a surface area that only grows when you explicitly expand it.
+
+## The pgvector tenant isolation layer
+
+Access control at the API gate is necessary but not sufficient for a multi-tenant RAG system. If the vector search returns documents from all tenants and the application filters the response, Tenant A's documents still entered the context window — they were just removed from the output. That's not isolation, it's filtering.
+
+Covenant's pgvector query applies the `tenant_id` filter before the cosine similarity search:
+
+```sql
+SELECT content, metadata
+FROM documents
+WHERE tenant_id = $1
+ORDER BY embedding <=> $2
+LIMIT 10;
+```
+
+Tenant B's documents don't appear in the similarity results. They don't enter the context window. Claude is never in a position to accidentally surface them, be prompted to reveal them, or include them in a response. The isolation is structural, not behavioural.
+
+## What the curl demos actually prove
+
+Three roles, three outcomes, all verified:
+
+- **Admin token** against the query endpoint: HTTP 200, results returned from the correct tenant's documents.
+- **User token** against the sensitive data endpoint: HTTP 403 from OPA before Claude runs. The model was never invoked.
+- **Auditor token** against the query endpoint: HTTP 403. The auditor role has read access to the audit log and nothing else. That boundary is in the Rego file, not in a comment in the route handler.
+
+The audit log entry for the user 403 contains: timestamp, user_id, role, tenant_id, endpoint, query hash, OPA decision, and the specific Rego rule that fired. When someone asks "why was this request denied," the answer is in the log, not in a debugging session.
+
+## The design principle
+
+Security rules that live in the application are application problems. Security rules that live in a policy engine are security problems — independently testable, independently reviewable, and independently deployable. For AI systems where the model is a powerful and creative participant in every request, keeping the model out of the access decision isn't optional. It's the whole design.

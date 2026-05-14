@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Margin Watch â€” TSLA Intelligence Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="/chart.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0a0b0d;--bg2:#111318;--bg3:#181c24;--bg4:#1e2330;
+  --border:#ffffff0f;--border2:#ffffff18;--border3:#ffffff28;
+  --text:#e8eaf0;--text2:#9aa0b4;--text3:#5a6070;
+  --green:#00e5a0;--green2:#00b87c;--green-bg:#00e5a014;
+  --red:#ff4d6a;--red2:#cc2a44;--red-bg:#ff4d6a14;
+  --amber:#f5a623;--amber-bg:#f5a62314;
+  --blue:#4da6ff;--blue-bg:#4da6ff14;
+  --accent:#00e5a0;
+  --font-display:'Syne',sans-serif;
+  --font-mono:'DM Mono',monospace;
+  --r:8px;--r2:12px;--r3:16px;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--font-display);font-size:14px;line-height:1.5;min-height:100vh;}
+a{color:var(--green);text-decoration:none;}
+
+/* Layout */
+.header{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 1.5rem;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100;flex-wrap:wrap;gap:.75rem;}
+.logo{font-size:18px;font-weight:700;letter-spacing:-.5px;color:var(--text);}
+.logo span{color:var(--green);}
+.header-right{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;}
+.live-dot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.main{padding:1.5rem;max-width:1400px;margin:0 auto;}
+.section-title{font-size:11px;font-weight:500;letter-spacing:.12em;color:var(--text3);text-transform:uppercase;margin-bottom:.75rem;}
+
+/* Metric grid */
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+.metric{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:.85rem 1rem;transition:border-color .2s;}
+.metric:hover{border-color:var(--border2);}
+.metric.alert-crit{border-color:var(--red2);background:var(--red-bg);}
+.metric.alert-warn{border-color:var(--amber);background:var(--amber-bg);}
+.metric.alert-ok{border-color:var(--green2);}
+.metric-label{font-size:11px;color:var(--text3);margin-bottom:.4rem;letter-spacing:.04em;}
+.metric-val{font-size:22px;font-weight:700;font-family:var(--font-mono);color:var(--text);line-height:1.1;}
+.metric-delta{font-size:12px;font-family:var(--font-mono);margin-top:.3rem;}
+.up{color:var(--green);}
+.dn{color:var(--red);}
+.neu{color:var(--text3);}
+
+/* Charts row */
+.charts-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:.75rem;margin-bottom:1.5rem;}
+.chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;}
+.chart-title{font-size:12px;font-weight:500;color:var(--text2);margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;}
+.chart-title .badge{font-size:10px;padding:2px 7px;border-radius:4px;font-family:var(--font-mono);}
+.chart-wrap{position:relative;}
+
+/* Candlestick */
+#candle-container{overflow-x:auto;}
+.candle-chart{display:flex;align-items:flex-end;gap:3px;height:140px;padding:4px 0;}
+.candle-col{display:flex;flex-direction:column;align-items:center;gap:0;min-width:14px;}
+.candle-wick{width:1.5px;background:var(--text3);}
+.candle-body{width:10px;border-radius:1px;}
+.candle-label{font-size:9px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;writing-mode:vertical-rl;transform:rotate(180deg);height:32px;}
+.bull-body{background:var(--green);}
+.bear-body{background:var(--red);}
+.doji-body{background:var(--amber);height:2px !important;}
+
+/* Alert panel */
+.alerts-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-bottom:1.5rem;}
+.alert-item{display:flex;align-items:flex-start;gap:.6rem;padding:.5rem .6rem;border-radius:var(--r);margin-bottom:.4rem;font-size:12px;}
+.alert-item:last-child{margin-bottom:0;}
+.alert-item.crit{background:var(--red-bg);border:1px solid var(--red2);color:var(--red);}
+.alert-item.warn{background:var(--amber-bg);border:1px solid var(--amber);color:var(--amber);}
+.alert-item.ok{background:var(--green-bg);border:1px solid var(--green2);color:var(--green);}
+.alert-item.info{background:var(--blue-bg);border:1px solid var(--blue);color:var(--blue);}
+.alert-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.crit .alert-dot{background:var(--red);}
+.warn .alert-dot{background:var(--amber);}
+.ok .alert-dot{background:var(--green);}
+.info .alert-dot{background:var(--blue);}
+
+/* Bottom row */
+.bottom-row{display:grid;grid-template-columns:1fr 1.2fr;gap:.75rem;margin-bottom:1.5rem;}
+@media(max-width:700px){.bottom-row{grid-template-columns:1fr;}}
+
+/* AI panel */
+.ai-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;}
+.ai-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;}
+.ai-label{font-size:11px;font-weight:500;letter-spacing:.08em;color:var(--text3);text-transform:uppercase;}
+.ai-status{font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--font-mono);}
+.ai-status.ready{background:var(--green-bg);color:var(--green);border:1px solid var(--green2);}
+.ai-status.running{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber);}
+.ai-text{font-size:13px;color:var(--text2);line-height:1.7;min-height:80px;}
+
+/* Controls */
+.controls-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;}
+.ctrl-row{display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;flex-wrap:wrap;}
+.ctrl-label{font-size:11px;color:var(--text3);min-width:130px;}
+input[type=range]{flex:1;min-width:80px;accent-color:var(--green);}
+.ctrl-val{font-size:12px;font-family:var(--font-mono);color:var(--text);min-width:42px;text-align:right;}
+.ctrl-row input[type=number]{width:72px;background:var(--bg3);border:1px solid var(--border2);border-radius:var(--r);padding:4px 8px;color:var(--text);font-family:var(--font-mono);font-size:12px;}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.45rem .9rem;border-radius:var(--r);font-size:12px;font-family:var(--font-display);font-weight:500;cursor:pointer;transition:all .15s;border:1px solid var(--border2);background:transparent;color:var(--text2);}
+.btn:hover{background:var(--bg3);color:var(--text);}
+.btn.primary{background:var(--green);color:#000;border-color:var(--green);}
+.btn.primary:hover{background:var(--green2);}
+.btn:disabled{opacity:.4;cursor:not-allowed;}
+.btn-sm{padding:.3rem .6rem;font-size:11px;}
+
+/* Volume bars */
+.vol-bars{display:flex;align-items:flex-end;gap:2px;height:60px;}
+.vol-bar{flex:1;border-radius:2px 2px 0 0;min-width:8px;transition:height .3s;}
+.vol-bar.unusual{background:var(--amber);box-shadow:0 0 6px var(--amber);}
+.vol-bar.normal{background:var(--text3);}
+
+/* Moving avg badge */
+.ma-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-family:var(--font-mono);padding:2px 7px;border-radius:4px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);}
+
+/* Log */
+.log-panel{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r2);padding:1rem;margin-bottom:1.5rem;}
+.log-entries{font-size:11px;font-family:var(--font-mono);color:var(--text3);max-height:100px;overflow-y:auto;line-height:1.8;}
+.log-ts{color:var(--text3);}
+.log-msg{color:var(--text2);}
+
+/* Candlestick rating */
+.candle-rating{display:inline-flex;align-items:center;gap:.4rem;font-size:12px;padding:3px 10px;border-radius:var(--r);font-family:var(--font-mono);font-weight:500;}
+.candle-rating.bull{background:var(--green-bg);color:var(--green);border:1px solid var(--green2);}
+.candle-rating.bear{background:var(--red-bg);color:var(--red);border:1px solid var(--red2);}
+.candle-rating.neutral{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber);}
+
+/* Sched */
+.sched-btns{display:flex;gap:.4rem;flex-wrap:wrap;}
+.sched-btn{font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:var(--font-mono);}
+.sched-btn.active{background:var(--green-bg);color:var(--green);border-color:var(--green2);}
+
+/* P/E gauge */
+.pe-gauge{display:flex;align-items:center;gap:.75rem;}
+.pe-bar-wrap{flex:1;height:8px;background:var(--bg3);border-radius:4px;overflow:hidden;}
+.pe-bar{height:100%;border-radius:4px;transition:width .4s;}
+.pe-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--text3);font-family:var(--font-mono);margin-top:3px;}
+
+.disclaimer{font-size:11px;color:var(--text3);text-align:center;padding:1rem 0 2rem;border-top:1px solid var(--border);margin-top:.5rem;}
+
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.metric,.chart-card,.alerts-panel,.ai-panel,.controls-card,.log-panel{animation:fadeIn .4s ease both;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div style="display:flex;align-items:center;gap:.75rem;">
+    <div class="logo">Margin<span>Watch</span></div>
+    <div style="display:flex;align-items:center;gap:.4rem;font-size:11px;color:var(--text3);font-family:var(--font-mono);">
+      <div class="live-dot"></div>
+      <span id="clock">â€”</span>
+    </div>
+    <span style="font-size:11px;padding:2px 8px;border-radius:4px;background:var(--green-bg);color:var(--green);border:1px solid var(--green2);font-family:var(--font-mono);">TSLA</span>
+  </div>
+  <div class="header-right">
+    <div style="display:flex;gap:.4rem;" class="sched-btns">
+      <button class="sched-btn" id="sb-w" onclick="setSched('weekly',this)">Weekly</button>
+      <button class="sched-btn active" id="sb-m" onclick="setSched('monthly',this)">Monthly</button>
+      <button class="sched-btn" id="sb-q" onclick="setSched('quarterly',this)">Quarterly</button>
+    </div>
+    <span id="next-review" style="font-size:11px;color:var(--text3);font-family:var(--font-mono);"></span>
+    <button class="btn" onclick="simulateTick()">&#8635; Simulate tick</button>
+    <button class="btn primary" id="btn-ai" onclick="runAI()">&#9670; AI evaluate</button>
+  </div>
+</div>
+
+<div class="main">
+
+<!-- KPI METRICS -->
+<div class="section-title">Key metrics</div>
+<div class="metrics-grid" id="kpi-grid">
+  <div class="metric" id="m-price"><div class="metric-label">TSLA price</div><div class="metric-val" id="v-price">$433</div><div class="metric-delta" id="d-price">â€”</div></div>
+  <div class="metric" id="m-gm"><div class="metric-label">Gross margin</div><div class="metric-val" id="v-gm">17.9%</div><div class="metric-delta" id="d-gm">â€”</div></div>
+  <div class="metric" id="m-om"><div class="metric-label">Operating margin</div><div class="metric-val" id="v-om">7.1%</div><div class="metric-delta" id="d-om">â€”</div></div>
+  <div class="metric" id="m-nm"><div class="metric-label">Net margin</div><div class="metric-val" id="v-nm">4.5%</div><div class="metric-delta" id="d-nm">â€”</div></div>
+  <div class="metric" id="m-rev"><div class="metric-label">Revenue (B)</div><div class="metric-val" id="v-rev">$21.3B</div><div class="metric-delta" id="d-rev">â€”</div></div>
+  <div class="metric" id="m-eps"><div class="metric-label">EPS</div><div class="metric-val" id="v-eps">$0.45</div><div class="metric-delta" id="d-eps">â€”</div></div>
+  <div class="metric" id="m-pe"><div class="metric-label">P/E ratio</div><div class="metric-val" id="v-pe">â€”</div><div class="metric-delta" id="d-pe" style="font-size:11px;color:var(--text3);">â€”</div></div>
+  <div class="metric" id="m-vol"><div class="metric-label">Volume</div><div class="metric-val" id="v-vol">â€”</div><div class="metric-delta" id="d-vol">â€”</div></div>
+  <div class="metric" id="m-candle"><div class="metric-label">Candle signal</div><div class="metric-val" id="v-candle" style="font-size:16px;">â€”</div><div class="metric-delta" id="d-candle">â€”</div></div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="charts-row" style="grid-template-columns:2fr 1fr;">
+  <div class="chart-card">
+    <div class="chart-title">
+      Price + moving averages
+      <span class="ma-badge" id="ma20-badge">MA20 â€”</span>
+      <span class="ma-badge" id="ma50-badge">MA50 â€”</span>
+      <span class="ma-badge" id="ma-signal" style="margin-left:auto;">â€”</span>
+    </div>
+    <div class="chart-wrap" style="height:180px;"><canvas id="price-chart" role="img" aria-label="TSLA price with 20 and 50 period moving averages">TSLA price and moving averages.</canvas></div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Volume <span id="vol-alert-badge" class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border2);">normal</span></div>
+    <div class="vol-bars" id="vol-bars"></div>
+    <div style="display:flex;justify-content:space-between;margin-top:.4rem;font-size:10px;color:var(--text3);font-family:var(--font-mono);" id="vol-labels"></div>
+    <div style="margin-top:.5rem;font-size:11px;color:var(--text3);">Avg vol: <span id="vol-avg" style="color:var(--text2);font-family:var(--font-mono);">â€”</span> &nbsp;|&nbsp; Threshold: <span id="vol-thresh-label" style="color:var(--amber);font-family:var(--font-mono);">1.5Ã—</span></div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 2 -->
+<div class="charts-row">
+  <div class="chart-card">
+    <div class="chart-title">Business margins â€” quarterly</div>
+    <div class="chart-wrap" style="height:160px;"><canvas id="biz-chart" role="img" aria-label="Quarterly gross, operating and net margin trend">Business margin trend.</canvas></div>
+    <div style="display:flex;gap:1rem;margin-top:.5rem;font-size:11px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#4da6ff;display:inline-block;"></span><span style="color:var(--text3);">Gross</span></span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#00e5a0;border-top:2px dashed #00e5a0;display:inline-block;"></span><span style="color:var(--text3);">Operating</span></span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#f5a623;border-top:2px dotted #f5a623;display:inline-block;"></span><span style="color:var(--text3);">Net</span></span>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Revenue + EPS trend</div>
+    <div class="chart-wrap" style="height:160px;"><canvas id="rev-chart" role="img" aria-label="Revenue and EPS quarterly trend">Revenue and EPS trend.</canvas></div>
+    <div style="display:flex;gap:1rem;margin-top:.5rem;font-size:11px;">
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:#4da6ff33;border:1px solid #4da6ff;border-radius:2px;display:inline-block;"></span><span style="color:var(--text3);">Revenue ($B)</span></span>
+      <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:#f5a623;display:inline-block;"></span><span style="color:var(--text3);">EPS ($)</span></span>
+    </div>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">P/E ratio vs sector</div>
+    <div id="pe-section">
+      <div style="margin-bottom:.75rem;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:.3rem;"><span>TSLA P/E</span><span id="pe-tsla-val" style="color:var(--text);font-family:var(--font-mono);">â€”</span></div>
+        <div class="pe-gauge"><div class="pe-bar-wrap"><div class="pe-bar" id="pe-tsla-bar" style="background:var(--amber);width:0%;"></div></div></div>
+      </div>
+      <div style="margin-bottom:.75rem;">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:.3rem;"><span>Sector avg P/E</span><span style="color:var(--text2);font-family:var(--font-mono);">28.4Ã—</span></div>
+        <div class="pe-gauge"><div class="pe-bar-wrap"><div class="pe-bar" style="background:var(--text3);width:28%;"></div></div></div>
+      </div>
+      <div>
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:.3rem;"><span>S&P 500 avg P/E</span><span style="color:var(--text2);font-family:var(--font-mono);">21.2Ã—</span></div>
+        <div class="pe-gauge"><div class="pe-bar-wrap"><div class="pe-bar" style="background:var(--text3);width:21%;"></div></div></div>
+      </div>
+      <div id="pe-rating" style="margin-top:.75rem;font-size:11px;color:var(--text3);font-family:var(--font-mono);"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CANDLESTICK -->
+<div class="chart-card" style="margin-bottom:1.5rem;">
+  <div class="chart-title" style="justify-content:space-between;">
+    <span>Candlestick patterns â€” recent sessions</span>
+    <div style="display:flex;align-items:center;gap:.5rem;" id="candle-rating-wrap"></div>
+  </div>
+  <div id="candle-container">
+    <div class="candle-chart" id="candle-chart"></div>
+  </div>
+  <div style="display:flex;gap:1rem;margin-top:.5rem;font-size:11px;color:var(--text3);">
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--green);border-radius:1px;display:inline-block;"></span>Bullish</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;background:var(--red);border-radius:1px;display:inline-block;"></span>Bearish</span>
+    <span style="display:flex;align-items:center;gap:4px;"><span style="width:10px;height:2px;background:var(--amber);display:inline-block;"></span>Doji</span>
+    <span id="pattern-label" style="margin-left:auto;color:var(--text2);font-family:var(--font-mono);font-size:11px;"></span>
+  </div>
+</div>
+
+<!-- ALERTS + AI -->
+<div class="charts-row" style="grid-template-columns:1fr 1.4fr;">
+  <div class="alerts-panel">
+    <div class="section-title" style="margin-bottom:.6rem;">Active alerts</div>
+    <div id="alert-list"><div style="font-size:12px;color:var(--text3);">Loadingâ€¦</div></div>
+  </div>
+  <div class="ai-panel">
+    <div class="ai-header">
+      <div class="ai-label">AI agent evaluation</div>
+      <span class="ai-status ready" id="ai-status">ready</span>
+    </div>
+    <div class="ai-text" id="ai-text">Click "AI evaluate" to run the agent. It will analyse all current readings â€” margins, EPS, P/E, volume, moving averages, and candlestick signals â€” and return a structured assessment with risk flags and a recommended action.</div>
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="bottom-row">
+  <div class="controls-card">
+    <div class="section-title" style="margin-bottom:.75rem;">Alert thresholds</div>
+    <div class="ctrl-row"><span class="ctrl-label">% change trigger</span><input type="range" id="t-pct" min="1" max="20" step="1" value="5" oninput="document.getElementById('o-pct').textContent=this.value+'%';runChecks();"><span class="ctrl-val" id="o-pct">5%</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">Gross margin floor</span><input type="range" id="t-gm" min="5" max="40" step="1" value="16" oninput="document.getElementById('o-gm').textContent=this.value+'%';runChecks();"><span class="ctrl-val" id="o-gm">16%</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">Operating margin floor</span><input type="range" id="t-om" min="0" max="20" step="1" value="5" oninput="document.getElementById('o-om').textContent=this.value+'%';runChecks();"><span class="ctrl-val" id="o-om">5%</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">Net margin floor</span><input type="range" id="t-nm" min="0" max="15" step="1" value="3" oninput="document.getElementById('o-nm').textContent=this.value+'%';runChecks();"><span class="ctrl-val" id="o-nm">3%</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">EPS floor</span><input type="range" id="t-eps" min="0" max="200" step="1" value="20" oninput="document.getElementById('o-eps').textContent='$'+(this.value/100).toFixed(2);runChecks();"><span class="ctrl-val" id="o-eps">$0.20</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">P/E ceiling</span><input type="range" id="t-pe" min="20" max="200" step="1" value="100" oninput="document.getElementById('o-pe').textContent=this.value+'Ã—';runChecks();"><span class="ctrl-val" id="o-pe">100Ã—</span></div>
+    <div class="ctrl-row"><span class="ctrl-label">Volume spike (Ã—avg)</span><input type="range" id="t-vol" min="10" max="40" step="1" value="15" oninput="document.getElementById('o-vol').textContent=(this.value/10).toFixed(1)+'Ã—';updateVolDisplay();"><span class="ctrl-val" id="o-vol">1.5Ã—</span></div>
+  </div>
+  <div class="log-panel" style="margin-bottom:0;">
+    <div class="section-title" style="margin-bottom:.5rem;">Event log</div>
+    <div class="log-entries" id="event-log"></div>
+  </div>
+</div>
+
+<div class="disclaimer">
+  MarginWatch is an educational demonstration. Not financial advice. Data is simulated for illustration purposes.<br>
+  To connect live data, replace <code>simulateTick()</code> with your API feed. &nbsp;|&nbsp; Built for adventuringghost.com
+</div>
+
+</div><!-- /main -->
+
+<script>
+// â”€â”€ DATA â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const QUARTERS = ['Q1 22','Q2 22','Q3 22','Q4 22','Q1 23','Q2 23','Q3 23','Q4 23','Q1 24','Q2 24','Q3 24','Q4 24','Q1 25'];
+const BIZ = {
+  gross:    [32.9,27.9,27.9,23.8,19.3,19.3,17.9,17.6,17.4,18.0,19.8,16.3,17.9],
+  operating:[19.2,14.6,17.2,16.0,11.4, 5.5, 4.2, 3.9, 5.5, 6.3, 7.4, 6.9, 7.1],
+  net:      [15.5,11.0,13.8,13.5, 8.2, 3.2, 2.5, 3.6, 2.7, 3.8, 4.3, 3.1, 4.5],
+  revenue:  [18.8,16.9,21.5,24.3,23.3,24.9,23.4,25.2,21.3,22.5,25.2,25.7,21.3],
+  eps:      [1.07,0.76,1.05,1.19,0.85,0.71,0.66,0.73,0.45,0.52,0.72,0.73,0.45]
+};
+
+const PRICE_HIST = [
+  // 2022 monthly — post-split adjusted
+  311, 280, 357, 291, 245, 224, 297, 300, 265, 227, 183, 123,
+  // 2023 monthly
+  161, 191, 207, 165, 203, 261, 269, 245, 250, 198, 235, 253,
+  // 2024 monthly
+  188, 202, 175, 147, 178, 198, 232, 214, 250, 250, 352, 404,
+  // Q1-Q2 2025
+  386, 288, 282, 357, 433
+];
+
+const PRICE_LABELS = [
+  'Jan 22','Feb 22','Mar 22','Apr 22','May 22','Jun 22','Jul 22','Aug 22','Sep 22','Oct 22','Nov 22','Dec 22',
+  'Jan 23','Feb 23','Mar 23','Apr 23','May 23','Jun 23','Jul 23','Aug 23','Sep 23','Oct 23','Nov 23','Dec 23',
+  'Jan 24','Feb 24','Mar 24','Apr 24','May 24','Jun 24','Jul 24','Aug 24','Sep 24','Oct 24','Nov 24','Dec 24',
+  'Jan 25','Feb 25','Mar 25','Apr 25','May 25'
+];
+
+const VOL_HIST = [
+  // 2022 avg daily vol (M)
+  95, 85,110,130,160,180,120, 95,110,140,130,180,
+  // 2023
+  150,130,160,120,110, 95, 88, 95,105,120,110, 85,
+  // 2024
+   85, 95,110,130, 88, 75, 78, 85, 90, 95,125,130,
+  // 2025
+  110,145, 95, 88, 67
+].map(v => v * 1e6);
+
+// Generate ~30 daily candles
+function genCandles(prices) {
+  const candles = [];
+  for (let i = 1; i < prices.length; i++) {
+    const open = prices[i-1];
+    const close = prices[i];
+    const range = Math.abs(close - open);
+    const wick_up = range * (0.3 + Math.random() * 0.7);
+    const wick_dn = range * (0.3 + Math.random() * 0.5);
+    const high = Math.max(open, close) + wick_up;
+    const low  = Math.min(open, close) - wick_dn;
+    const doji = range / ((high - low) || 1) < 0.12;
+    candles.push({ open, close, high, low, doji,
+      bull: close > open,
+      label: 'P'+(i)
+    });
+  }
+  return candles.slice(-20);
+}
+
+// â”€â”€ STATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const S = {
+  price: 433.45, pricePrev: 403.84,
+  gm: 17.9, gmPrev: 16.3,
+  om: 7.1,  omPrev: 6.9,
+  nm: 4.5,  nmPrev: 3.1,
+  rev: 21.3, revPrev: 25.7,
+  eps: 0.45, epsPrev: 0.73,
+  vol: VOL_HIST[VOL_HIST.length-1],
+  volPrev: VOL_HIST[VOL_HIST.length-2],
+  volHist: [...VOL_HIST],
+  priceHist: [...PRICE_HIST],
+  bizGross: [...BIZ.gross], bizOp: [...BIZ.operating], bizNet: [...BIZ.net],
+  bizRev: [...BIZ.revenue], bizEps: [...BIZ.eps],
+  tickCount: 0, sched: 'monthly'
+};
+
+// â”€â”€ CHARTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+let priceChart, bizChart, revChart;
+
+function ma(arr, n) {
+  return arr.map((_, i) => i < n-1 ? null : arr.slice(i-n+1,i+1).reduce((a,b)=>a+b,0)/n);
+}
+
+function initPriceChart() {
+  const labels = [...PRICE_LABELS];
+  const ma20 = ma(S.priceHist, 20);
+  const ma36 = ma(S.priceHist, 36);
+  const ctx = document.getElementById('price-chart').getContext('2d');
+  priceChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels, datasets:[
+      {label:'Price', data:[...S.priceHist], borderColor:'#4da6ff', borderWidth:2, pointRadius:0, tension:0.3, fill:false},
+      {label:'MA20',  data:ma20,             borderColor:'#00e5a0', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[4,3]},
+      {label:'MA36',  data:ma36,             borderColor:'#f5a623', borderWidth:1.5, pointRadius:0, tension:0.3, fill:false, borderDash:[2,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a6070',font:{size:10},maxTicksLimit:8},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#5a6070',font:{size:10},callback:v=>'$'+v.toFixed(0)},grid:{color:'rgba(255,255,255,0.04)'}}
+      }}
+  });
+}
+
+function initBizChart() {
+  const ctx = document.getElementById('biz-chart').getContext('2d');
+  bizChart = new Chart(ctx, {
+    type:'line',
+    data:{ labels:[...QUARTERS], datasets:[
+      {label:'Gross',     data:[...S.bizGross], borderColor:'#4da6ff', borderWidth:2, pointRadius:2, tension:0.3, fill:false},
+      {label:'Operating', data:[...S.bizOp],   borderColor:'#00e5a0', borderWidth:1.5, pointRadius:2, tension:0.3, fill:false, borderDash:[5,3]},
+      {label:'Net',       data:[...S.bizNet],   borderColor:'#f5a623', borderWidth:1.5, pointRadius:2, tension:0.3, fill:false, borderDash:[2,3]}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a6070',font:{size:10}},grid:{color:'rgba(255,255,255,0.04)'}},
+        y:{ticks:{color:'#5a6070',font:{size:10},callback:v=>v+'%'},grid:{color:'rgba(255,255,255,0.04)'}}
+      }}
+  });
+}
+
+function initRevChart() {
+  const ctx = document.getElementById('rev-chart').getContext('2d');
+  revChart = new Chart(ctx, {
+    type:'bar',
+    data:{ labels:[...QUARTERS], datasets:[
+      {label:'Revenue', data:[...S.bizRev], backgroundColor:'rgba(77,166,255,0.2)', borderColor:'#4da6ff', borderWidth:1, yAxisID:'y'},
+      {label:'EPS',     data:[...S.bizEps], type:'line', borderColor:'#f5a623', borderWidth:2, pointRadius:2, tension:0.3, fill:false, yAxisID:'y1'}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,animation:false,
+      plugins:{legend:{display:false}},
+      scales:{
+        x:{ticks:{color:'#5a6070',font:{size:10}},grid:{display:false}},
+        y:{ticks:{color:'#5a6070',font:{size:10},callback:v=>'$'+v+'B'},grid:{color:'rgba(255,255,255,0.04)'},position:'left'},
+        y1:{ticks:{color:'#f5a623',font:{size:10},callback:v=>'$'+v.toFixed(2)},position:'right',grid:{display:false}}
+      }}
+  });
+}
+
+// â”€â”€ VOLUME â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function updateVolDisplay() {
+  const recent = S.volHist.slice(-12);
+  const avg = recent.reduce((a,b)=>a+b,0)/recent.length;
+  const thresh = +document.getElementById('t-vol').value / 10;
+  const maxV = Math.max(...recent);
+  const container = document.getElementById('vol-bars');
+  const labels = document.getElementById('vol-labels');
+  container.innerHTML = '';
+  labels.innerHTML = '';
+  recent.forEach((v,i) => {
+    const pct = (v/maxV*100).toFixed(1);
+    const unusual = v > avg * thresh;
+    const bar = document.createElement('div');
+    bar.className = 'vol-bar ' + (unusual ? 'unusual' : 'normal');
+    bar.style.height = pct + '%';
+    bar.title = (v/1e6).toFixed(1)+'M' + (unusual?' âš  unusual':'');
+    container.appendChild(bar);
+    if (i % 3 === 0) {
+      const l = document.createElement('span');
+      l.style.fontSize = '9px';
+      l.style.color = unusual ? '#f5a623' : '#5a6070';
+      l.style.fontFamily = 'DM Mono,monospace';
+      l.textContent = (v/1e6).toFixed(0)+'M';
+      labels.appendChild(l);
+    } else {
+      labels.appendChild(document.createElement('span'));
+    }
+  });
+  document.getElementById('vol-avg').textContent = (avg/1e6).toFixed(0)+'M';
+  document.getElementById('vol-thresh-label').textContent = thresh.toFixed(1)+'Ã—';
+  const isUnusual = S.vol > avg * thresh;
+  const badge = document.getElementById('vol-alert-badge');
+  badge.textContent = isUnusual ? 'âš  unusual' : 'normal';
+  badge.style.background = isUnusual ? 'rgba(245,166,35,0.15)' : 'var(--bg3)';
+  badge.style.color = isUnusual ? '#f5a623' : '#5a6070';
+  badge.style.border = isUnusual ? '1px solid #f5a623' : '1px solid var(--border2)';
+}
+
+// â”€â”€ CANDLESTICKS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function renderCandles() {
+  const candles = genCandles(S.priceHist);
+  const container = document.getElementById('candle-chart');
+  container.innerHTML = '';
+  const prices = candles.map(c => [c.high, c.low, c.open, c.close]).flat();
+  const minP = Math.min(...prices), maxP = Math.max(...prices);
+  const range = maxP - minP || 1;
+  const H = 130;
+
+  candles.forEach((c,i) => {
+    const col = document.createElement('div');
+    col.className = 'candle-col';
+    const bodyTop = H - ((Math.max(c.open,c.close)-minP)/range*H);
+    const bodyH = Math.max(2, Math.abs(c.close-c.open)/range*H);
+    const wickTop = H - ((c.high-minP)/range*H);
+    const wickH = (c.high-c.low)/range*H;
+    const wick = document.createElement('div');
+    wick.className = 'candle-wick';
+    wick.style.height = wickH.toFixed(1)+'px';
+    wick.style.marginBottom = '0';
+    const body = document.createElement('div');
+    body.className = 'candle-body ' + (c.doji?'doji-body':c.bull?'bull-body':'bear-body');
+    body.style.height = (c.doji?2:bodyH).toFixed(1)+'px';
+    const lbl = document.createElement('div');
+    lbl.className = 'candle-label';
+    lbl.textContent = 'D'+(i+1);
+    const wrapper = document.createElement('div');
+    wrapper.style.cssText = `position:relative;height:${H}px;width:14px;display:flex;flex-direction:column;justify-content:flex-end;`;
+    const wickWrap = document.createElement('div');
+    wickWrap.style.cssText = `position:absolute;left:6px;top:${wickTop.toFixed(1)}px;`;
+    wickWrap.appendChild(wick);
+    const bodyWrap = document.createElement('div');
+    bodyWrap.style.cssText = `position:absolute;left:2px;top:${bodyTop.toFixed(1)}px;`;
+    bodyWrap.appendChild(body);
+    wrapper.appendChild(wickWrap);
+    wrapper.appendChild(bodyWrap);
+    col.appendChild(wrapper);
+    col.appendChild(lbl);
+    container.appendChild(col);
+  });
+
+  const bulls = candles.filter(c=>!c.doji&&c.bull).length;
+  const bears = candles.filter(c=>!c.doji&&!c.bull).length;
+  const last3 = candles.slice(-3);
+  const last3Bull = last3.filter(c=>c.bull).length;
+  let signal, cls, patternName;
+  if (last3Bull >= 3) { signal='Bullish'; cls='bull'; patternName='3 consecutive bull candles'; }
+  else if (last3Bull === 0) { signal='Bearish'; cls='bear'; patternName='3 consecutive bear candles'; }
+  else if (last3.some(c=>c.doji)) { signal='Neutral'; cls='neutral'; patternName='Doji pattern detected'; }
+  else if (last3Bull === 2) { signal='Bullish'; cls='bull'; patternName='Bullish momentum building'; }
+  else { signal='Bearish'; cls='bear'; patternName='Bearish pressure present'; }
+
+  const wrap = document.getElementById('candle-rating-wrap');
+  wrap.innerHTML = `<span class="candle-rating ${cls}">${signal} Â· ${bulls}B / ${bears}Be</span>`;
+  document.getElementById('pattern-label').textContent = patternName;
+  document.getElementById('v-candle').textContent = signal;
+  document.getElementById('d-candle').className = 'metric-delta ' + (cls==='bull'?'up':cls==='bear'?'dn':'neu');
+  document.getElementById('d-candle').textContent = patternName;
+  document.getElementById('m-candle').className = 'metric ' + (cls==='bull'?'alert-ok':cls==='bear'?'alert-crit':'alert-warn');
+}
+
+// â”€â”€ MOVING AVERAGES â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function updateMABadges() {
+  const ph = S.priceHist;
+  const ma20v = ph.slice(-20).reduce((a,b)=>a+b,0)/Math.min(20,ph.length);
+  const ma36v = ph.slice(-36).reduce((a,b)=>a+b,0)/Math.min(36,ph.length);
+  const cur = ph[ph.length-1];
+  const aboveMA20 = cur > ma20v;
+  const aboveMA36 = cur > ma36v;
+  document.getElementById('ma20-badge').textContent = 'MA20 $'+ma20v.toFixed(0);
+  document.getElementById('ma20-badge').style.color = aboveMA20 ? '#00e5a0' : '#ff4d6a';
+  document.getElementById('ma50-badge').textContent = 'MA36 $'+ma36v.toFixed(0);
+  document.getElementById('ma50-badge').style.color = aboveMA36 ? '#00e5a0' : '#ff4d6a';
+  const golden = aboveMA20 && aboveMA36;
+  const death  = !aboveMA20 && !aboveMA36;
+  const sigEl = document.getElementById('ma-signal');
+  if (golden) { sigEl.textContent='Golden cross'; sigEl.style.color='#00e5a0'; sigEl.style.borderColor='#00b87c'; }
+  else if (death) { sigEl.textContent='Death cross'; sigEl.style.color='#ff4d6a'; sigEl.style.borderColor='#cc2a44'; }
+  else { sigEl.textContent='Mixed signals'; sigEl.style.color='#f5a623'; sigEl.style.borderColor='#f5a623'; }
+}
+
+// â”€â”€ P/E â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function updatePE() {
+  const annEPS = S.eps * 4;
+  const pe = annEPS > 0 ? (S.price / annEPS) : 0;
+  document.getElementById('v-pe').textContent = pe.toFixed(1)+'Ã—';
+  const peRating = pe > 150 ? 'Significantly overvalued vs sector' : pe > 80 ? 'Premium valuation â€” growth priced in' : pe > 40 ? 'Elevated but within tech range' : 'Reasonable relative to peers';
+  const peColor = pe > 150 ? '#ff4d6a' : pe > 80 ? '#f5a623' : '#00e5a0';
+  document.getElementById('d-pe').textContent = peRating;
+  document.getElementById('d-pe').style.color = peColor;
+  document.getElementById('pe-tsla-val').textContent = pe.toFixed(1)+'Ã—';
+  document.getElementById('pe-rating').textContent = peRating;
+  document.getElementById('pe-rating').style.color = peColor;
+  const pePct = Math.min(100, pe/2).toFixed(1);
+  document.getElementById('pe-tsla-bar').style.width = pePct+'%';
+  document.getElementById('pe-tsla-bar').style.background = peColor;
+  const ceiling = +document.getElementById('t-pe').value;
+  document.getElementById('m-pe').className = 'metric ' + (pe > ceiling ? 'alert-crit' : pe > ceiling * 0.8 ? 'alert-warn' : 'alert-ok');
+}
+
+// â”€â”€ KPI DISPLAY â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function fmtDelta(cur, prev) {
+  if (prev === 0) return 'â€”';
+  const d = cur - prev;
+  const sign = d >= 0 ? '+' : '';
+  return sign + d.toFixed(2) + (typeof cur === 'number' && cur > 10 ? '' : '');
+}
+function fmtPct(cur, prev) {
+  if (!prev) return 'â€”';
+  const d = ((cur-prev)/Math.abs(prev)*100);
+  return (d>=0?'+':'')+d.toFixed(1)+'%';
+}
+function setMetric(id, val, prev, fmt, unit='') {
+  document.getElementById('v-'+id).textContent = fmt(val) + unit;
+  const d = document.getElementById('d-'+id);
+  const delta = val - prev;
+  d.textContent = (delta>=0?'+':'')+delta.toFixed(id==='rev'?1:2)+(unit||'') + ' ('+fmtPct(val,prev)+')';
+  d.className = 'metric-delta ' + (delta>=0?'up':'dn');
+}
+
+function updateKPIs() {
+  document.getElementById('v-price').textContent = '$'+S.price.toFixed(0);
+  const pd = ((S.price-S.pricePrev)/S.pricePrev*100);
+  document.getElementById('d-price').textContent = (pd>=0?'+':'')+pd.toFixed(2)+'%';
+  document.getElementById('d-price').className = 'metric-delta '+(pd>=0?'up':'dn');
+  document.getElementById('m-price').className = 'metric';
+
+  setMetric('gm', S.gm, S.gmPrev, v=>v.toFixed(1), '%');
+  setMetric('om', S.om, S.omPrev, v=>v.toFixed(1), '%');
+  setMetric('nm', S.nm, S.nmPrev, v=>v.toFixed(1), '%');
+
+  document.getElementById('v-rev').textContent = '$'+S.rev.toFixed(1)+'B';
+  const rd = S.rev - S.revPrev;
+  document.getElementById('d-rev').textContent = (rd>=0?'+':'')+rd.toFixed(1)+'B ('+fmtPct(S.rev,S.revPrev)+')';
+  document.getElementById('d-rev').className = 'metric-delta '+(rd>=0?'up':'dn');
+
+  document.getElementById('v-eps').textContent = '$'+S.eps.toFixed(2);
+  const ed = S.eps - S.epsPrev;
+  document.getElementById('d-eps').textContent = (ed>=0?'+':'')+ed.toFixed(2)+' ('+fmtPct(S.eps,S.epsPrev)+')';
+  document.getElementById('d-eps').className = 'metric-delta '+(ed>=0?'up':'dn');
+
+  const vm = S.vol/1e6;
+  document.getElementById('v-vol').textContent = vm.toFixed(0)+'M';
+  const volAvg = S.volHist.slice(-12).reduce((a,b)=>a+b,0)/12;
+  const volRatio = S.vol/volAvg;
+  document.getElementById('d-vol').textContent = volRatio.toFixed(1)+'Ã— avg';
+  document.getElementById('d-vol').className = 'metric-delta '+(volRatio>1.5?'warn':volRatio>1?'up':'neu');
+  document.getElementById('m-vol').className = 'metric '+(volRatio > +document.getElementById('t-vol').value/10 ? 'alert-warn' : '');
+}
+
+// â”€â”€ ALERTS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function runChecks() {
+  const t = {
+    pct:   +document.getElementById('t-pct').value,
+    gm:    +document.getElementById('t-gm').value,
+    om:    +document.getElementById('t-om').value,
+    nm:    +document.getElementById('t-nm').value,
+    eps:   +document.getElementById('t-eps').value / 100,
+    pe:    +document.getElementById('t-pe').value,
+    vol:   +document.getElementById('t-vol').value / 10
+  };
+  const alerts = [];
+  const chk = (cur, prev, label, floor, unit='%') => {
+    const chgPct = Math.abs((cur-prev)/Math.abs(prev||1)*100);
+    if (chgPct >= t.pct) alerts.push({lvl:'warn', msg:`${label} moved ${chgPct.toFixed(1)}% (threshold ${t.pct}%)`});
+    if (floor !== null && cur < floor) alerts.push({lvl:'crit', msg:`${label} ${cur.toFixed(2)}${unit} below floor ${floor}${unit}`});
+  };
+  chk(S.gm,  S.gmPrev,  'Gross margin',     t.gm);
+  chk(S.om,  S.omPrev,  'Operating margin',  t.om);
+  chk(S.nm,  S.nmPrev,  'Net margin',        t.nm);
+  chk(S.eps, S.epsPrev, 'EPS',               t.eps, '');
+  chk(S.rev, S.revPrev, 'Revenue',           null,  'B');
+  const annEPS = S.eps * 4;
+  const pe = annEPS > 0 ? S.price/annEPS : 0;
+  if (pe > t.pe) alerts.push({lvl:'crit', msg:`P/E ${pe.toFixed(1)}Ã— exceeds ceiling ${t.pe}Ã—`});
+  const volAvg = S.volHist.slice(-12).reduce((a,b)=>a+b,0)/12;
+  if (S.vol > volAvg * t.vol) alerts.push({lvl:'info', msg:`Unusual volume: ${(S.vol/1e6).toFixed(0)}M = ${(S.vol/volAvg).toFixed(1)}Ã— avg`});
+  const lastCandle = document.getElementById('d-candle').textContent;
+  if (lastCandle.includes('bear') || lastCandle.includes('Bear')) alerts.push({lvl:'warn', msg:'Bearish candlestick pattern detected'});
+  if (alerts.length === 0) alerts.push({lvl:'ok', msg:'All metrics within configured thresholds'});
+
+  const el = document.getElementById('alert-list');
+  el.innerHTML = alerts.map(a => `
+    <div class="alert-item ${a.lvl}">
+      <div class="alert-dot"></div>
+      <span>${a.msg}</span>
+    </div>`).join('');
+  updateVolDisplay();
+  updatePE();
+  updateMABadges();
+}
+
+// â”€â”€ SIMULATE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function simulateTick() {
+  S.tickCount++;
+  S.pricePrev = S.price; S.gmPrev = S.gm; S.omPrev = S.om; S.nmPrev = S.nm;
+  S.revPrev = S.rev; S.epsPrev = S.eps; S.volPrev = S.vol;
+
+  const n = () => (Math.random()-.48)*2.2;
+  S.price   = Math.max(150, Math.min(600, S.price*(1+(Math.random()-.47)*.05)));
+  S.gm      = Math.max(8,   Math.min(32, S.gm+n()));
+  S.om      = Math.max(0,   Math.min(18, S.om+n()*.6));
+  S.nm      = Math.max(-2,  Math.min(14, S.nm+n()*.5));
+  S.rev     = Math.max(16,  Math.min(32, S.rev+n()*.4));
+  S.eps     = Math.max(0,   Math.min(2,  S.eps+n()*.05));
+  S.vol     = Math.max(20e6,Math.min(200e6, S.vol*(1+(Math.random()-.4)*.3)));
+
+  S.priceHist.push(+S.price.toFixed(2)); S.priceHist.shift();
+  S.volHist.push(S.vol); S.volHist.shift();
+  S.bizGross.push(+S.gm.toFixed(1)); S.bizGross.shift();
+  S.bizOp.push(+S.om.toFixed(1)); S.bizOp.shift();
+  S.bizNet.push(+S.nm.toFixed(1)); S.bizNet.shift();
+  S.bizRev.push(+S.rev.toFixed(1)); S.bizRev.shift();
+  S.bizEps.push(+S.eps.toFixed(2)); S.bizEps.shift();
+
+  updateKPIs();
+  renderCandles();
+  updateAllCharts();
+  runChecks();
+  if (!aiRunning) { runAI(); }
+  log('Tick #'+S.tickCount+' â€” all metrics updated');
+}
+
+function updateAllCharts() {
+  const ma20 = ma(S.priceHist, 20);
+  const ma36 = ma(S.priceHist, 36);
+  priceChart.data.datasets[0].data = [...S.priceHist];
+  priceChart.data.datasets[1].data = ma20;
+  priceChart.data.datasets[2].data = ma36;
+  priceChart.update();
+  bizChart.data.datasets[0].data = [...S.bizGross];
+  bizChart.data.datasets[1].data = [...S.bizOp];
+  bizChart.data.datasets[2].data = [...S.bizNet];
+  bizChart.update();
+  revChart.data.datasets[0].data = [...S.bizRev];
+  revChart.data.datasets[1].data = [...S.bizEps];
+  revChart.update();
+}
+
+// â”€â”€ AI â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+const AI_PROXY_URL = 'https://margin-watch-proxy.adventuringghost.workers.dev';
+let aiRunning = false;
+
+async function runAI() {
+  if (aiRunning) return;
+  aiRunning = true;
+  const btn = document.getElementById('btn-ai');
+  const status = document.getElementById('ai-status');
+  btn.disabled = true; btn.textContent='Running...';
+  status.className='ai-status running'; status.textContent='running';
+
+  const pe = (S.eps*4)>0?(S.price/(S.eps*4)).toFixed(1)+'Ã—':'N/A';
+  const volAvg = S.volHist.slice(-12).reduce((a,b)=>a+b,0)/12;
+  const volR = (S.vol/volAvg).toFixed(1);
+  const ma20v = S.priceHist.slice(-20).reduce((a,b)=>a+b,0)/20;
+  const ma50v = S.priceHist.slice(-36).reduce((a,b)=>a+b,0)/36;
+  const candleEl = document.getElementById('d-candle').textContent;
+
+  const prompt = `You are a financial intelligence AI agent. Analyse this TSLA dashboard snapshot and provide a structured 4-point evaluation. Format: (1) Margin health, (2) Valuation & EPS, (3) Technical signal, (4) Recommended action. Each point 1-2 sentences. Be precise and direct.
+
+Current snapshot:
+Price: $${S.price.toFixed(2)} | Gross margin: ${S.gm.toFixed(1)}% (prev ${S.gmPrev.toFixed(1)}%) | Operating margin: ${S.om.toFixed(1)}% (prev ${S.omPrev.toFixed(1)}%) | Net margin: ${S.nm.toFixed(1)}% (prev ${S.nmPrev.toFixed(1)}%)
+Revenue: $${S.rev.toFixed(1)}B (prev $${S.revPrev.toFixed(1)}B) | EPS: $${S.eps.toFixed(2)} (prev $${S.epsPrev.toFixed(2)}) | P/E: ${pe}
+Volume: ${(S.vol/1e6).toFixed(0)}M = ${volR}Ã— avg | MA20: $${ma20v.toFixed(0)} | MA50: $${ma50v.toFixed(0)} | Price vs MA20: ${S.price>ma20v?'above':'below'} | Price vs MA50: ${S.price>ma50v?'above':'below'}
+Candlestick signal: ${candleEl}`;
+
+  try {
+    const r = await fetch(AI_PROXY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})
+    });
+    const d = await r.json();
+    if (d.error) {
+      log('API error: ' + d.error.message);
+      fallbackAI(pe, volR, ma20v, ma50v);
+    } else {
+      const text = d.content?.[0]?.text;
+      if (text) {
+        document.getElementById('ai-text').textContent = text;
+        status.className='ai-status ready'; status.textContent='complete';
+        log('AI agent evaluation complete');
+      } else { fallbackAI(pe,volR,ma20v,ma50v); }
+    }
+  } catch(e) {
+    log('Request failed — using deterministic evaluation');
+    fallbackAI(pe,volR,ma20v,ma50v);
+  }
+  aiRunning = false;
+  btn.disabled=false; btn.textContent='â—† AI evaluate';
+}
+
+function fallbackAI(pe, volR, ma20v, ma50v) {
+  const status = document.getElementById('ai-status');
+  const marginHealth = S.gm > 16 && S.om > 5 ? 'healthy' : S.gm < 14 ? 'compressed' : 'under pressure';
+  document.getElementById('ai-text').textContent =
+    `(1) Margin health: Business margins are ${marginHealth} â€” gross at ${S.gm.toFixed(1)}%, operating at ${S.om.toFixed(1)}%, net at ${S.nm.toFixed(1)}%. ${S.gm < S.gmPrev ? 'Gross compression vs prior period warrants monitoring.' : 'Gross margin held stable vs prior.'}\n\n` +
+    `(2) Valuation & EPS: P/E of ${pe} is ${+pe>80?'elevated â€” growth premium priced in':'within range for sector'}. EPS of $${S.eps.toFixed(2)} vs $${S.epsPrev.toFixed(2)} prior is ${S.eps >= S.epsPrev ? 'stable or improving' : 'declining â€” watch earnings trajectory'}.\n\n` +
+    `(3) Technical signal: Price $${S.price.toFixed(0)} is ${S.price>ma20v?'above':'below'} MA20 ($${ma20v.toFixed(0)}) and ${S.price>ma50v?'above':'below'} MA50 ($${ma50v.toFixed(0)}). Volume at ${volR}Ã— average ${+volR>1.5?'â€” unusual â€” warrants investigation':' is within normal range'}.\n\n` +
+    `(4) Recommended action: ${S.gm < 16 || S.eps < S.epsPrev ? 'Review cost structure and revenue drivers before next earnings. Flag for management attention.' : 'Continue monitoring at current cadence. No immediate action required.'}`;
+  status.className='ai-status ready'; status.textContent='ready';
+  log('Quantitative evaluation complete (fallback)');
+}
+
+// â”€â”€ SCHEDULE â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function setSched(s, el) {
+  S.sched = s;
+  document.querySelectorAll('.sched-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  const days = s==='weekly'?7:s==='monthly'?30:90;
+  const d = new Date(Date.now()+days*86400000);
+  document.getElementById('next-review').textContent = 'Next: '+d.toISOString().slice(0,10);
+  log('Cadence set to '+s);
+}
+
+// â”€â”€ LOG â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function log(msg) {
+  const el = document.getElementById('event-log');
+  const ts = new Date().toLocaleTimeString('en-CA',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  el.innerHTML = `<span class="log-ts">[${ts}]</span> <span class="log-msg">${msg}</span><br>` + el.innerHTML;
+}
+
+// â”€â”€ CLOCK â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+function tickClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleString('en-CA',{dateStyle:'medium',timeStyle:'short'});
+}
+
+// â”€â”€ INIT â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+requestAnimationFrame(function() {
+  initPriceChart();
+  initBizChart();
+  initRevChart();
+  updateKPIs();
+  renderCandles();
+  updateAllCharts();
+  runChecks();
+});
+tickClock();
+setSched('monthly', document.getElementById('sb-m'));
+log('MarginWatch initialised â€” monitoring active');
+setInterval(tickClock, 30000);
+</script>
+</body>
+</html>
+

@@ -1,4 +1,4 @@
-import React, { Suspense } from "react";
+import { Suspense } from "react";
 import { siteContent } from "@/content/site";
 import { notFound } from "next/navigation";
 import type { Metadata, ResolvingMetadata } from "next";
@@ -15,6 +15,9 @@ import { MilestoneCard } from "@/components/MilestoneCard";
 import { MonitoringCard } from "@/components/MonitoringCard";
 import { CodeBlockWrapper } from "@/components/ui/CodeBlockWrapper";
 import { HighlightedCode } from "@/components/ui/HighlightedCode";
+import { WardenArchDiagram } from "@/components/diagrams/WardenArchDiagram";
+import { AviationArchDiagram } from "@/components/diagrams/AviationArchDiagram";
+import { AviationStateMachineDiagram } from "@/components/diagrams/AviationStateMachineDiagram";
 
 interface Learning {
   category: string;
@@ -81,7 +84,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata(
   { params }: { params: { slug: string } | Promise<{ slug: string }> },
-  parent: ResolvingMetadata,
+  _parent: ResolvingMetadata,
 ): Promise<Metadata> {
   // params may be a promise in Next 16+; unwrap it
   const { slug } = await params;
@@ -174,6 +177,14 @@ export default async function ProjectPage({
   if (!project) {
     notFound();
   }
+
+  const arcPeers = project.portfolioArc
+    ? siteContent.projects.filter(
+        (p) =>
+          project.portfolioArc!.peers.includes(p.slug) &&
+          p.slug !== project.slug,
+      )
+    : [];
 
   let learningsContent = null;
   if (Array.isArray(project.learnings)) {
@@ -283,6 +294,23 @@ export default async function ProjectPage({
                   </p>
                 )}
               </Card>
+            )}
+
+            {project.slug === "warden" && (
+              <div className="mb-12">
+                <WardenArchDiagram />
+              </div>
+            )}
+
+            {project.slug === "aviation-tool-inventory" && (
+              <>
+                <div className="mb-8">
+                  <AviationArchDiagram />
+                </div>
+                <div className="mb-12">
+                  <AviationStateMachineDiagram />
+                </div>
+              </>
             )}
 
             <div className="my-12 space-y-8">
@@ -421,27 +449,87 @@ export default async function ProjectPage({
                   variant="secondary"
                   className="w-full sm:w-auto"
                 >
-                  <Link
+                  <a
                     href={project.codeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     View Source Code
-                  </Link>
+                  </a>
                 </Button>
               )}
               {project.liveUrl && (
                 <Button asChild variant="accent" className="w-full sm:w-auto">
-                  <Link
+                  <a
                     href={project.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Live Demo
-                  </Link>
+                  </a>
                 </Button>
               )}
             </div>
+
+            {project.portfolioArc && arcPeers.length > 0 && (
+              <div className="mt-20 border-t border-gray-200 pt-16">
+                <div className="text-center mb-10">
+                  <p className="text-xs font-mono text-gray-400 tracking-[0.2em] uppercase mb-3">
+                    Part of a larger arc
+                  </p>
+                  <SectionHeading level={2} className="mb-4">
+                    {project.portfolioArc.name}
+                  </SectionHeading>
+                  <p className="text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                    {project.portfolioArc.summary}
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap justify-center gap-6 mb-10">
+                  {project.portfolioArc.costs.map((c) => (
+                    <div key={c.label} className="text-center">
+                      <p className="text-2xl font-bold text-gray-900">{c.amount}</p>
+                      <p className="text-xs font-mono text-gray-400 uppercase tracking-widest mt-1">{c.label}</p>
+                    </div>
+                  ))}
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-[#59D5E0]">{project.portfolioArc.totalCost}</p>
+                    <p className="text-xs font-mono text-gray-400 uppercase tracking-widest mt-1">Combined</p>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                  {arcPeers.map((peer) => (
+                    <Link key={peer.slug} href={`/projects/${peer.slug}/`}>
+                      <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer h-full">
+                        <p className="text-xs font-mono text-gray-400 tracking-[0.2em] uppercase mb-2">
+                          Related project
+                        </p>
+                        <h3 className="font-bold text-gray-900 mb-2">{peer.title}</h3>
+                        {peer.tagline && (
+                          <p className="text-sm text-gray-600 mb-4">{peer.tagline}</p>
+                        )}
+                        <div className="flex flex-wrap gap-1 mb-4">
+                          {peer.stack.slice(0, 4).map((tech) => (
+                            <Badge key={tech}>{tech}</Badge>
+                          ))}
+                        </div>
+                      </Card>
+                    </Link>
+                  ))}
+                </div>
+
+                <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
+                  {arcPeers.map((peer) => (
+                    <Button key={peer.slug} asChild variant="secondary" className="w-full sm:w-auto">
+                      <Link href={`/projects/${peer.slug}/`}>
+                        {peer.title.split(" —")[0]} →
+                      </Link>
+                    </Button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </Section>
       </div>

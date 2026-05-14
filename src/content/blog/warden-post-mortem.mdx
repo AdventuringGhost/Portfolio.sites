@@ -1,0 +1,46 @@
+This is a post-mortem in the SRE sense — a structured account of an incident (simulated), a timeline of system response, an honest assessment of what held, and what would need hardening before this runs in production. The goal isn't to prove Warden is bulletproof. It's to document exactly what it does and doesn't handle, because that's how you build trust in a security system.
+
+## Incident summary
+
+A simulated adversarial workload executed a shell spawn inside a running container on an AKS cluster running Warden. Falco detected the syscall pattern, Falcosidekick forwarded the alert to the Warden webhook, Claude Sonnet 4.6 triaged the severity as low, and Warden auto-patched the workload via the Kubernetes API. Total time from shell spawn to HTTP 200 confirmation: approximately 3 seconds.
+
+## System state at incident time
+
+- AKS cluster running: 1 node pool, Standard_B2s nodes
+- Warden FastAPI server: running as a Kubernetes Deployment, ClusterIP service
+- Falco DaemonSet: active, eBPF probe loaded, custom rules targeting shell spawns and privilege escalation
+- Falcosidekick: configured to forward all Falco alerts to the Warden webhook endpoint
+- OPA Gatekeeper: ConstraintTemplates active — BlockPrivilegedContainers, BlockUnverifiedRegistries, RequireNonRoot
+- Azure Key Vault: Claude API key mounted via managed identity, no secrets in source control
+
+## Timeline
+
+- **T+0s** — Simulated workload executes `/bin/bash` inside a running container. Falco eBPF probe intercepts the execve syscall matching the Terminal shell in container rule.
+- **T+0.3s** — Falco generates a structured JSON alert: rule name, container ID, pod name, namespace, command, severity classification.
+- **T+0.5s** — Falcosidekick receives the event, applies output formatting, and POSTs to the Warden webhook endpoint at `http://warden-service/webhook/falco`.
+- **T+0.8s** — Warden FastAPI handler receives the payload. Extracts pod name, namespace, severity from the Falco JSON structure. Constructs the Claude triage prompt with full alert context.
+- **T+1.5s** — Claude Sonnet 4.6 returns structured triage: severity=low, classification="interactive shell spawn in running container," recommended action="isolate and patch workload."
+- **T+2.0s** — Warden routes to the auto-patch handler. Calls the Kubernetes API to delete the offending pod. Kubernetes reschedules a clean replacement from the original Deployment spec.
+- **T+3.0s** — Warden returns HTTP 200 with the triage result and action taken. Prometheus metrics updated: alert_count+1, auto_patch_success+1.
+
+## What held
+
+The two-layer detection model worked as designed. OPA Gatekeeper would have blocked the workload at admission if it had tried to run as privileged — Layer 1. Falco caught the runtime behaviour that only became visible after the workload was running — Layer 2. The two layers address different threat surfaces and neither replaces the other.
+
+Claude's structured output format was reliable across all test runs. The severity classification matched expected outcomes consistently. The triage latency — approximately 700ms from prompt submission to response — is acceptable for a security alert handler that's auto-patching, not blocking a request in the critical path.
+
+Azure Key Vault managed identity injection worked without issues. The Claude API key was never present in source control, container images, or environment variables.
+
+## What needs hardening before production
+
+Warden auto-patches on severity=low without human confirmation. In a real cluster, the definition of "low severity" needs to be tighter and the auto-patch action needs a dry-run mode and an approval gate for anything above a defined threshold. The current implementation trusts Claude's severity classification directly — a production version should validate that classification against a local rule set before acting.
+
+The Falco ruleset is the default plus a small set of custom rules. A production deployment needs tuning for the specific workload profile of the cluster — default Falco rules generate noise in clusters running legitimate shell-heavy workloads like CI runners.
+
+The Prometheus metrics are present but there's no alerting configured on them. A production Warden deployment needs Grafana alerts on auto-patch failure rate and Claude API error rate — if the triage pipeline is broken, you want to know before the next real incident.
+
+## Lessons
+
+The biggest lesson from building Warden is that security automation is only as trustworthy as its audit trail. Every Claude triage decision is logged with the original alert payload, the full reasoning chain, the severity classification, and the action taken. That audit log is what makes the auto-patch defensible — not because it's always right, but because you can always see exactly why it did what it did.
+
+The second lesson is that eBPF-based runtime detection and admission control are complementary, not redundant. Running both on the same cluster and proving they address different threat surfaces is worth the operational overhead.

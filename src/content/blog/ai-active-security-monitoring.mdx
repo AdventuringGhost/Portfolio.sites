@@ -1,0 +1,75 @@
+Security monitoring has a signal problem. Most production environments generate more events than any team can meaningfully review. SIEM dashboards fill up with alerts that get tuned down until the noise is manageable — and then something real gets missed because it looks like noise.
+
+AI doesn't solve this by being smarter about which alerts matter. It solves it by changing the relationship between alert volume and analyst capacity. That's a meaningful shift, and it's worth understanding precisely what it does and doesn't do before you decide where it belongs in your stack.
+
+---
+
+## The core problem with rule-based alerting
+
+Traditional security monitoring is built on rules. A rule fires when a condition is met: failed login attempts above a threshold, a process executing from an unexpected path, a network connection to a known bad IP. Rules are deterministic and auditable, which makes them trustworthy. They're also static, which makes them brittle.
+
+Attackers adapt to known detection rules. Threshold-based rules get evaded by staying just below the threshold. Known-bad IP lists are outdated within hours of publication. Rules written for one environment's normal baseline don't transfer cleanly to another.
+
+The other problem is false positive rate. Rules that are sensitive enough to catch real threats also catch legitimate activity that looks similar. The standard response to high false positive rates is to tune the rule — raise the threshold, add exceptions — until the alert volume is manageable. The cost of that tuning is missed detections at the edges.
+
+This isn't a criticism of rule-based monitoring. Rules are correct for what they do. The problem is that they can't be the only layer.
+
+---
+
+## What AI adds
+
+AI-based monitoring works differently. Instead of firing on a predefined condition, it learns what normal looks like for a given environment and surfaces deviations from that baseline. The value isn't that it replaces rules — it's that it catches the things rules can't describe in advance.
+
+A few concrete examples of what this looks like in practice:
+
+**Behavioral anomaly detection.** A service account that has historically only made read calls to a specific API begins making write calls at 2am. No rule fires because write access is permitted for that account — the permission exists. But the behavior is anomalous. An AI monitoring layer that's modeled the account's normal activity pattern flags the deviation for review. A rule-based system, by itself, doesn't.
+
+**Lateral movement patterns.** Attackers who gain a foothold in an environment often move slowly — authenticating to systems they haven't touched before, escalating privileges incrementally, establishing persistence across multiple hosts over days or weeks. Each individual action may be below any alert threshold. The pattern across all of them is a signal. AI can correlate across time windows and entity types in ways that rule-based systems can't practically implement.
+
+**Context-aware triage.** When an alert fires, the analyst needs context: what else was this entity doing? Does this pattern appear elsewhere? Is there a related ticket open? An AI triage layer can assemble that context automatically, reducing the time from alert to informed decision. This matters because triage latency is where real damage happens — the window between detection and response is when an attacker is still moving.
+
+---
+
+## The human-in-the-loop question
+
+There's a version of AI security monitoring that's fully autonomous — detect, classify, and remediate without human review. That's architecturally possible, and in some narrow contexts (like auto-isolating a container that has demonstrated a specific threat signature on a non-production cluster), it may be appropriate.
+
+For most production environments and most threat types, it isn't. The reason is that the cost of a false positive in an automated remediation loop is different from the cost of a false positive in an alert queue. A false positive in an alert queue costs an analyst time. A false positive in an automated remediation loop can take down a service, revoke legitimate access, or create an incident where there wasn't one.
+
+The right architecture for most organizations is: AI does the work of monitoring, correlating, and prioritizing. Humans make the remediation decision, informed by the AI's triage output. Automation is reserved for the cases where the action is low-risk, reversible, and the signal confidence is high.
+
+That boundary — between what the AI decides and what it surfaces for human decision — needs to be explicit and revisable. The organizations that get into trouble with security automation are usually the ones that let that boundary drift without examining it.
+
+---
+
+## Audit trails and explainability
+
+This point is not optional: any AI system making decisions in a security monitoring context needs a complete, queryable audit trail. Every flag, every triage decision, every automated action needs to be logged with the reasoning that produced it.
+
+This matters for three reasons. First, incident response. When something goes wrong, you need to reconstruct exactly what the system saw, what it decided, and why — both to understand the incident and to identify whether the monitoring system performed correctly or missed something.
+
+Second, compliance. Most regulatory frameworks that touch security operations (SOC 2, ISO 27001, various sector-specific requirements) require demonstrable evidence of monitoring and response processes. An AI triage layer that can't produce an audit trail for its decisions creates a compliance gap, not a solution to one.
+
+Third, trust. Security teams need to trust the tools they use. A system that produces correct outputs but can't explain them is hard to trust, hard to tune, and hard to defend to stakeholders. Explainable outputs — "this was flagged because this entity deviated from its 30-day baseline on these three behavioral dimensions" — are calibrateable. Black boxes aren't.
+
+---
+
+## Where to integrate it
+
+If you're evaluating where to add AI to an existing security monitoring stack, the highest-value starting points are:
+
+**Alert triage and prioritization.** If your team is dealing with alert fatigue — more alerts than they can meaningfully review — an AI triage layer that scores and prioritizes the queue is often the highest-leverage first step. It doesn't require replacing existing tooling, and the ROI is directly measurable in analyst time recaptured.
+
+**Behavioral baseline modeling.** For environments where you have entity-level logging (user activity, service account behavior, host telemetry), adding an anomaly detection layer that models baselines per entity and surfaces deviations addresses the class of threats that rule-based systems miss. This requires clean, consistent log data — garbage-in applies here more than anywhere.
+
+**Threat correlation across timeframes.** If your SIEM has a log retention policy measured in days and your security team is reviewing alerts in isolation rather than in sequence, you're missing the patterns that span time. AI-driven correlation that operates across longer windows and multiple entity types catches the slow-moving threats that are often the most serious.
+
+---
+
+## The honest framing
+
+AI is not a replacement for a security team, a security architecture, or a well-designed monitoring baseline. An AI layer on top of a poorly logged, poorly segmented environment will produce sophisticated-looking alerts that don't mean much, because the underlying signal quality isn't there.
+
+What AI does well is amplify the value of good security fundamentals — clean logging, consistent data pipelines, well-scoped detection rules — by adding a correlation and anomaly detection layer that scales with event volume in a way that human review can't.
+
+If your fundamentals are solid, AI in your monitoring stack is a genuine force multiplier. If they're not, the right investment is in the fundamentals first. That order of operations isn't glamorous, but it's the one that produces systems that hold.

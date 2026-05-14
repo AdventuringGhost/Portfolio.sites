@@ -1,0 +1,69 @@
+Expense management is one of those processes that looks simple from the outside until you're actually running it. Then you discover it's a collection of manual steps, exception handling, and human judgment calls that someone has to make on a recurring basis — and that it scales badly with headcount.
+
+AI doesn't fix expense management by making it smarter. It fixes it by removing the parts that shouldn't require human attention in the first place.
+
+---
+
+## Where the friction actually lives
+
+Before you can understand what AI does here, you need an honest map of where expense management breaks down.
+
+**Data entry and categorization.** Someone submits a receipt. Someone else — or the submitter themselves — has to tag it with the right cost center, category, and project code. In a small team this is annoying. In a mid-size organization with dozens of people submitting weekly, it's a significant administrative load, and the error rate on manual categorization is high enough to create real downstream problems in financial reporting.
+
+**Policy compliance checking.** Every expense policy has rules — per diem limits, approved vendor lists, required receipt thresholds, approval tiers based on amount. Checking each submission against those rules manually is exactly the kind of repetitive, rule-based task humans do poorly at scale. People miss things. Exceptions accumulate. Audits surface problems that should have been caught at submission.
+
+**Approval routing.** Getting the right approval from the right person before the right deadline is a coordination problem that gets harder as organizations grow. Expenses get stuck. Approvers forget. Finance teams spend time chasing people rather than closing books.
+
+**Anomaly detection.** Identifying outliers — an unusual spend category for a given employee, a duplicate submission, a vendor that doesn't match the project — requires comparing each transaction against a baseline. Manually, that baseline only exists in someone's head, which means outliers surface late or not at all.
+
+These four failure modes share a common structure: they're rule-based, repetitive, and data-driven. That's exactly where AI performs well.
+
+---
+
+## What AI actually does at each stage
+
+**At data entry:** Modern AI can extract structured data from unstructured receipts — amounts, dates, vendors, line items — with accuracy that matches or exceeds manual entry for most document types. This isn't complex machine learning; it's a solved problem that most expense platforms have had for a few years. The more interesting application is auto-categorization: an AI trained on your organization's historical categorization decisions can assign cost centers and project codes with high accuracy, flagging only the ambiguous cases for human review.
+
+The result is that the average expense submission requires zero human categorization effort. Exceptions go to a human; clean cases go straight to approval.
+
+**At policy compliance:** Rule-based checks are the most straightforward AI application here — not because they require intelligence, but because encoding your expense policy in a system that checks every submission automatically is faster and more reliable than any human review process. The AI doesn't get tired, doesn't make exceptions for people it likes, and doesn't miss the $501 meal that's $1 over the per diem limit.
+
+The more sophisticated version uses an LLM to handle the edge cases that don't fit neatly into hard rules. A meal that's within the per diem but occurred on a weekend with no travel record is a policy question that requires judgment. An agent with access to the relevant policy documents and the employee's travel schedule can surface the right question to the right reviewer, rather than requiring the reviewer to already know what to look for.
+
+**At approval routing:** AI can reduce approval delays by predicting the right approver based on organizational structure and transaction type, sending reminders calibrated to the approver's historical response patterns, and escalating automatically when SLAs are missed. This isn't autonomous decision-making — the human still approves — but removing the friction from routing and follow-up meaningfully reduces cycle time.
+
+**At anomaly detection:** This is where AI earns the most. Statistical anomaly detection on expense data can flag transactions that deviate from an employee's historical patterns, duplicate submissions across timeframes, and vendor charges that don't match project context — all at a scale that makes manual review impractical. The key design constraint is that anomaly flagging should surface cases for human review, not automatically reject or approve them. The AI narrows the review queue to the cases that deserve attention.
+
+---
+
+## The integration reality
+
+None of this works in isolation. AI-driven expense management requires clean data pipelines — expense submissions in a consistent format, connections to your GL for category mapping, access to policy documentation, and hooks into your approval workflow.
+
+The organizations that get the best results are the ones that treat this as an infrastructure problem first. The AI layer only delivers value if the data flowing into it is clean and the outputs of its decisions flow into the systems that act on them. An AI that flags a policy violation but can't route that flag to the right person hasn't solved the problem.
+
+If you're evaluating platforms, the questions worth asking are: Where does the structured data come from? How are policy rules encoded and updated? What does the exception queue look like for the reviewer? And — critically — what is the audit trail for each AI decision?
+
+That last question matters more than most people ask about. When an expense is rejected, the employee needs to understand why. When an anomaly is flagged, finance needs to be able to explain what triggered it. An AI system that makes opaque decisions in an expense workflow creates more compliance risk than it solves.
+
+---
+
+## What it doesn't fix
+
+AI doesn't fix a poorly designed expense policy. If your per diem limits haven't been updated in four years, automating enforcement of those limits makes bad policy more consistent — it doesn't make it good policy.
+
+AI doesn't fix culture. If your organization has a norm of submitting personal expenses alongside business ones and relying on approvers to silently ignore them, automating the compliance check will surface friction that's been hidden. That's worth knowing, but it's not painless.
+
+And AI doesn't eliminate the need for finance oversight. What it does is shift the nature of that oversight — from manually processing clean cases to focusing on exceptions, edge cases, and the systematic questions that only emerge when you can actually see patterns across the full submission set.
+
+That shift is the real value. Not that AI does the work humans used to do, but that it changes what work humans are doing — and in expense management, the work worth doing is analysis and judgment, not categorization and receipt chasing.
+
+---
+
+## The practical starting point
+
+If you're evaluating where to start, begin with categorization and policy compliance. Both have well-understood AI solutions, clear accuracy baselines you can test against, and measurable impact on the time your finance team spends on routine review.
+
+Build a baseline first. Measure how long categorization takes per submission, what your policy exception rate is, and what your average approval cycle time is. Then pick one of those three metrics, implement a targeted solution, and measure the delta. The ROI case for the next step gets easier once you have real numbers from the first.
+
+The organizations doing this well didn't replace their entire expense workflow at once. They removed friction from one stage, measured it, and expanded from there. That's still the right approach.

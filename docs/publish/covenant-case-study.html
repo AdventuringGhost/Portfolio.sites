@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Covenant — Policy-Enforced AI Access Control | AdventuringGhost</title>
+  <meta name="description" content="A production case study: Covenant enforces OPA Rego policy as a hard gate between JWT identity and Claude — the AI never decides who sees what." />
+  <meta name="author" content="Skipper — adventuringghost.com" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & tokens ─────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:         #0d0f14;
+      --bg-card:    #13161e;
+      --bg-code:    #0a0c10;
+      --border:     #1e2330;
+      --border-lit: #2a3048;
+      --text:       #e2e8f0;
+      --text-muted: #8892a4;
+      --text-dim:   #4a5568;
+      --cyan:       #59d5e0;
+      --cyan-dim:   rgba(89,213,224,.12);
+      --yellow:     #f5dd61;
+      --yellow-dim: rgba(245,221,97,.10);
+      --green:      #4ade80;
+      --green-dim:  rgba(74,222,128,.10);
+      --red:        #f87171;
+      --red-dim:    rgba(248,113,113,.10);
+      --purple:     #a78bfa;
+      --purple-dim: rgba(167,139,250,.10);
+      --orange:     #fb923c;
+      --font-sans:  'Inter', system-ui, sans-serif;
+      --font-mono:  'JetBrains Mono', 'Fira Code', monospace;
+      --radius:     8px;
+      --radius-lg:  12px;
+      --max-w:      860px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 16px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .container { max-width: var(--max-w); margin: 0 auto; padding: 0 24px; }
+
+    section { padding: 72px 0; }
+    section + section { border-top: 1px solid var(--border); }
+
+    /* ── Typography ─────────────────────────────────────────── */
+    h1, h2, h3, h4 { font-weight: 700; line-height: 1.2; letter-spacing: -0.02em; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); }
+    h2 { font-size: clamp(1.4rem, 3vw, 1.9rem); margin-bottom: 32px; }
+    h3 { font-size: 1.1rem; font-weight: 600; margin-bottom: 10px; }
+
+    p { color: var(--text-muted); margin-bottom: 16px; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); font-weight: 600; }
+    a { color: var(--cyan); text-decoration: none; transition: opacity .15s; }
+    a:hover { opacity: .75; }
+    ul { list-style: none; padding: 0; }
+
+    /* ── Section label ──────────────────────────────────────── */
+    .label {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 16px;
+    }
+
+    /* ── Nav ─────────────────────────────────────────────────── */
+    nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(13,15,20,.88);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      max-width: var(--max-w);
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .nav-logo {
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: .02em;
+    }
+
+    .nav-logo span { color: var(--cyan); }
+
+    .nav-links { display: flex; gap: 28px; list-style: none; }
+
+    .nav-links a {
+      font-size: .82rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      transition: color .15s;
+    }
+
+    .nav-links a:hover { color: var(--cyan); }
+
+    /* ── Hero ────────────────────────────────────────────────── */
+    .hero {
+      padding: 96px 0 80px;
+      border-bottom: 1px solid var(--border);
+      background:
+        radial-gradient(ellipse 70% 60% at 10% 0%, rgba(89,213,224,.07) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 90% 100%, rgba(167,139,250,.05) 0%, transparent 60%);
+    }
+
+    .hero-eyebrow {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 20px;
+    }
+
+    .hero h1 {
+      background: linear-gradient(135deg, var(--text) 0%, var(--purple) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 20px;
+    }
+
+    .hero-tagline {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 640px;
+      margin-bottom: 36px;
+      line-height: 1.6;
+    }
+
+    .hero-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      margin-bottom: 40px;
+    }
+
+    .hero-stat { display: flex; flex-direction: column; gap: 2px; }
+
+    .hero-stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--purple);
+    }
+
+    .hero-stat-label {
+      font-size: .72rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+    }
+
+    .hero-stat-sep {
+      width: 1px;
+      height: 36px;
+      background: var(--border-lit);
+      align-self: center;
+    }
+
+    .hero-ctas { display: flex; flex-wrap: wrap; gap: 12px; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 20px;
+      border-radius: var(--radius);
+      font-family: var(--font-mono);
+      font-size: .82rem;
+      font-weight: 600;
+      letter-spacing: .02em;
+      transition: all .15s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary { background: var(--purple); color: #0d0f14; }
+    .btn-primary:hover { background: #b89bfc; opacity: 1; }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid var(--border-lit);
+    }
+
+    .btn-outline:hover { border-color: var(--purple); color: var(--purple); opacity: 1; }
+
+    /* ── Badge ───────────────────────────────────────────────── */
+    .badge-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 32px; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 500;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .badge-cyan   { background: var(--cyan-dim);   border-color: rgba(89,213,224,.25);  color: var(--cyan); }
+    .badge-yellow { background: var(--yellow-dim);  border-color: rgba(245,221,97,.25);  color: var(--yellow); }
+    .badge-green  { background: var(--green-dim);   border-color: rgba(74,222,128,.25);  color: var(--green); }
+    .badge-purple { background: var(--purple-dim);  border-color: rgba(167,139,250,.25); color: var(--purple); }
+    .badge-orange { background: rgba(251,146,60,.10); border-color: rgba(251,146,60,.25); color: var(--orange); }
+
+    /* ── Cards ───────────────────────────────────────────────── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: border-color .2s;
+    }
+
+    .card:hover { border-color: var(--border-lit); }
+
+    /* ── 4-component grid ────────────────────────────────────── */
+    .component-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .component-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px 20px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color .2s;
+    }
+
+    .component-card:hover { border-color: var(--border-lit); }
+
+    .component-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+    }
+
+    .component-card-purple::before { background: var(--purple); }
+    .component-card-cyan::before   { background: var(--cyan); }
+    .component-card-green::before  { background: var(--green); }
+    .component-card-yellow::before { background: var(--yellow); }
+
+    .component-arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-dim);
+      font-family: var(--font-mono);
+      font-size: .85rem;
+      padding-top: 8px;
+    }
+
+    .component-icon { font-size: 1.6rem; margin-bottom: 12px; }
+
+    .component-name {
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .component-card-purple .component-name { color: var(--purple); }
+    .component-card-cyan   .component-name { color: var(--cyan); }
+    .component-card-green  .component-name { color: var(--green); }
+    .component-card-yellow .component-name { color: var(--yellow); }
+
+    .component-card h3 { font-size: .95rem; margin-bottom: 8px; }
+    .component-card p  { font-size: .84rem; }
+
+    /* ── RBAC proof ──────────────────────────────────────────── */
+    .rbac-table-wrap {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .rbac-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .rbac-table thead tr { border-bottom: 1px solid var(--border-lit); }
+
+    .rbac-table th {
+      padding: 13px 18px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      white-space: nowrap;
+    }
+
+    .rbac-table th.col-role   { color: var(--text-muted); }
+    .rbac-table th.col-admin  { color: var(--cyan); }
+    .rbac-table th.col-user   { color: var(--yellow); }
+    .rbac-table th.col-audit  { color: var(--purple); }
+
+    .rbac-table td {
+      padding: 12px 18px;
+      font-size: .86rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+    }
+
+    .rbac-table tbody tr:last-child td { border-bottom: none; }
+    .rbac-table td:first-child { color: var(--text); }
+    .rbac-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+    .access-yes { color: var(--green); }
+    .access-no  { color: var(--red); }
+
+    /* ── Tab demo ────────────────────────────────────────────── */
+    .tab-container { margin-top: 32px; }
+
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 0;
+    }
+
+    .tab-btn {
+      padding: 10px 20px;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      transition: all .15s;
+      letter-spacing: .04em;
+    }
+
+    .tab-btn:hover { color: var(--text-muted); }
+    .tab-btn-active { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+    .tab-pane {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+      padding: 20px 24px;
+    }
+
+    .tab-pane pre {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .tab-pane .c-key    { color: var(--cyan); }
+    .tab-pane .c-val    { color: var(--yellow); }
+    .tab-pane .c-status-ok  { color: var(--green); font-weight: 700; }
+    .tab-pane .c-status-err { color: var(--red);   font-weight: 700; }
+    .tab-pane .c-comment { color: var(--text-dim); font-style: italic; }
+
+    /* ── Code block (Rego) ───────────────────────────────────── */
+    .code-block {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .code-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .code-title {
+      font-family: var(--font-mono);
+      font-size: .75rem;
+      color: var(--text-dim);
+    }
+
+    .code-lang {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--purple);
+    }
+
+    .code-block pre {
+      padding: 24px;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      line-height: 1.65;
+      color: var(--text-muted);
+      white-space: pre;
+      overflow-x: auto;
+    }
+
+    .rego-kw      { color: var(--purple); }
+    .rego-pkg     { color: var(--cyan); }
+    .rego-str     { color: var(--yellow); }
+    .rego-comment { color: var(--text-dim); font-style: italic; }
+    .rego-op      { color: var(--text); }
+
+    /* ── Architecture flow ───────────────────────────────────── */
+    .flow-steps { display: flex; flex-direction: column; gap: 0; }
+
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      position: relative;
+    }
+
+    .flow-step:not(:last-child)::before {
+      content: '';
+      position: absolute;
+      left: 19px;
+      top: 44px;
+      width: 2px;
+      height: calc(100% - 20px);
+      background: linear-gradient(to bottom, var(--cyan-dim), transparent);
+    }
+
+    .step-num {
+      flex-shrink: 0;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--cyan-dim);
+      border: 1px solid rgba(89,213,224,.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      font-weight: 700;
+      color: var(--cyan);
+    }
+
+    .step-num-gate {
+      background: var(--purple-dim);
+      border-color: rgba(167,139,250,.4);
+      color: var(--purple);
+      box-shadow: 0 0 12px rgba(167,139,250,.18);
+    }
+
+    .step-body { padding: 8px 0 32px; }
+    .step-body h3 { color: var(--text); }
+    .step-body p { margin-top: 4px; }
+
+    .gate-banner {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--purple-dim);
+      border: 1px solid rgba(167,139,250,.3);
+      border-radius: var(--radius);
+      padding: 6px 14px;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 10px;
+    }
+
+    /* ── Challenges ──────────────────────────────────────────── */
+    .challenge-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+    }
+
+    .challenge-header {
+      padding: 18px 24px 0;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .challenge-num {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: var(--red-dim);
+      border: 1px solid rgba(248,113,113,.25);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      font-weight: 700;
+      color: var(--red);
+      margin-top: 1px;
+    }
+
+    .challenge-title {
+      font-size: .98rem;
+      font-weight: 600;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .challenge-body { padding: 14px 24px 20px 66px; }
+    .challenge-block { margin-bottom: 12px; }
+    .challenge-block:last-child { margin-bottom: 0; }
+
+    .challenge-block-label {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .label-problem { color: var(--red); }
+    .label-fix     { color: var(--green); }
+    .label-lesson  { color: var(--yellow); }
+    .challenge-block p { font-size: .88rem; }
+
+    /* ── Demonstrates ────────────────────────────────────────── */
+    .demonstrates-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-top: 8px;
+    }
+
+    .demo-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      transition: border-color .2s;
+    }
+
+    .demo-card:hover { border-color: var(--border-lit); }
+    .demo-icon { font-size: 1.5rem; margin-bottom: 12px; }
+    .demo-card h3 { font-size: .95rem; margin-bottom: 8px; }
+    .demo-card p  { font-size: .86rem; }
+
+    /* ── Cost table ──────────────────────────────────────────── */
+    .cost-table-wrap {
+      background: var(--bg-code);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin-top: 32px;
+    }
+
+    .cost-table { width: 100%; border-collapse: collapse; }
+    .cost-table thead tr { border-bottom: 1px solid var(--border-lit); }
+
+    .cost-table th {
+      padding: 14px 18px;
+      text-align: left;
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .cost-table th:first-child { color: var(--text-dim); }
+    .cost-table th.col-local   { color: var(--cyan); }
+    .cost-table th.col-startup { color: var(--green); }
+    .cost-table th.col-ent     { color: var(--yellow); }
+    .cost-table th.col-manual  { color: var(--red); }
+
+    .cost-table td {
+      padding: 13px 18px;
+      font-size: .87rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      vertical-align: top;
+    }
+
+    .cost-table td:first-child {
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: .78rem;
+    }
+
+    .cost-table tbody tr:last-child td {
+      border-bottom: none;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      background: rgba(89,213,224,.04);
+    }
+
+    .cost-table tbody tr:last-child td:nth-child(2) { color: var(--cyan); }
+    .cost-table tbody tr:last-child td:nth-child(3) { color: var(--green); }
+    .cost-table tbody tr:last-child td:nth-child(4) { color: var(--yellow); }
+    .cost-table tbody tr:last-child td:nth-child(5) { color: var(--red); }
+    .cost-table tbody tr:hover td { background: rgba(255,255,255,.02); }
+
+    .cost-note {
+      padding: 12px 18px;
+      border-top: 1px solid var(--border);
+      font-family: var(--font-mono);
+      font-size: .7rem;
+      color: var(--text-dim);
+    }
+
+    /* ── Industry cards ──────────────────────────────────────── */
+    .industry-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .industry-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      transition: border-color .2s;
+    }
+
+    .industry-card:hover { border-color: var(--border-lit); }
+    .industry-icon { font-size: 1.6rem; margin-bottom: 12px; }
+
+    .industry-name {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--purple);
+      margin-bottom: 6px;
+    }
+
+    .industry-card h3 { font-size: .96rem; margin-bottom: 12px; }
+
+    .industry-card ul { display: flex; flex-direction: column; gap: 8px; }
+
+    .industry-card li {
+      font-size: .83rem;
+      color: var(--text-muted);
+      padding-left: 16px;
+      position: relative;
+    }
+
+    .industry-card li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--purple);
+      font-size: .75rem;
+    }
+
+    /* ── Integration ─────────────────────────────────────────── */
+    .integration-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 16px;
+      margin-top: 32px;
+    }
+
+    .integration-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+    }
+
+    .integration-mode {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+
+    .integration-mode-purple { background: var(--purple-dim);  border: 1px solid rgba(167,139,250,.25); color: var(--purple); }
+    .integration-mode-green  { background: var(--green-dim);   border: 1px solid rgba(74,222,128,.25);  color: var(--green); }
+
+    .integration-timeline {
+      font-family: var(--font-mono);
+      font-size: .72rem;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    .integration-card h3 { font-size: 1rem; margin-bottom: 10px; }
+
+    .integration-steps { margin-top: 16px; display: flex; flex-direction: column; gap: 8px; }
+
+    .integration-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: .83rem;
+      color: var(--text-muted);
+    }
+
+    .integration-step-num {
+      flex-shrink: 0;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: var(--border-lit);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-mono);
+      font-size: .65rem;
+      color: var(--text-dim);
+      margin-top: 2px;
+    }
+
+    /* ── Portfolio arc ───────────────────────────────────────── */
+    .arc-section {
+      background: linear-gradient(to bottom, var(--bg), #0a0c10);
+      padding: 80px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    .arc-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-top: 40px;
+    }
+
+    .arc-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 22px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .arc-card-live {
+      border-color: rgba(89,213,224,.25);
+    }
+
+    .arc-card-live::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--cyan-dim), transparent);
+      pointer-events: none;
+    }
+
+    .arc-card-live-purple {
+      border-color: rgba(167,139,250,.3);
+    }
+
+    .arc-card-live-purple::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% -10%, var(--purple-dim), transparent);
+      pointer-events: none;
+    }
+
+    .arc-card-planned { opacity: .55; }
+
+    .arc-project-num {
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 8px;
+    }
+
+    .arc-project-name {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .arc-project-desc {
+      font-size: .78rem;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+
+    .arc-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-family: var(--font-mono);
+      font-size: .68rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .arc-status-live    { color: var(--cyan); }
+    .arc-status-current { color: var(--purple); }
+    .arc-status-planned { color: var(--text-dim); }
+
+    .arc-status-live::before, .arc-status-current::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    .arc-status-planned::before {
+      content: '';
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      border: 1px solid var(--text-dim);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .35; }
+    }
+
+    /* ── Footer ──────────────────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 0;
+      text-align: center;
+    }
+
+    footer p {
+      font-family: var(--font-mono);
+      font-size: .78rem;
+      color: var(--text-dim);
+      margin: 0;
+    }
+
+    footer a { color: var(--cyan); }
+
+    /* ── Utility ─────────────────────────────────────────────── */
+    .text-cyan   { color: var(--cyan); }
+    .text-yellow { color: var(--yellow); }
+    .text-green  { color: var(--green); }
+    .text-purple { color: var(--purple); }
+    .text-muted  { color: var(--text-muted); }
+    .mono        { font-family: var(--font-mono); }
+
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+    /* ── Responsive ──────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      section { padding: 52px 0; }
+      .hero   { padding: 64px 0 56px; }
+      .nav-links { display: none; }
+      .hero-meta { gap: 14px; }
+      .hero-stat-value { font-size: 1.15rem; }
+      .challenge-body { padding-left: 24px; }
+      .arc-grid { grid-template-columns: 1fr 1fr; }
+      .cost-table th, .cost-table td { padding: 10px 12px; }
+      .component-grid { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 400px) {
+      .arc-grid { grid-template-columns: 1fr; }
+      .component-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Navigation ─────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="https://adventuringghost.com" class="nav-logo">
+      AdventuringGhost<span>.com</span>
+    </a>
+    <ul class="nav-links">
+      <li><a href="#what-it-does">What it does</a></li>
+      <li><a href="#rbac">RBAC proof</a></li>
+      <li><a href="#architecture">Architecture</a></li>
+      <li><a href="#challenges">Challenges</a></li>
+      <li><a href="#value">Value</a></li>
+      <li><a href="https://github.com/AdventuringGhost/covenant">GitHub ↗</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- ── Hero ───────────────────────────────────────────────────── -->
+<section class="hero">
+  <div class="container">
+    <p class="hero-eyebrow">Case Study · Access Control · AI Security</p>
+    <h1>The AI Doesn't Get to Decide Who Sees What</h1>
+    <p class="hero-tagline">
+      Covenant enforces OPA Rego policy as a hard gate between JWT identity and Claude.
+      Access is evaluated before the model runs — not after, not inside the prompt,
+      not as a suggestion. A 403 from Rego is a 403. Full stop.
+    </p>
+
+    <div class="hero-meta">
+      <div class="hero-stat">
+        <span class="hero-stat-value">3 roles</span>
+        <span class="hero-stat-label">admin · user · auditor</span>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">Hard gate</span>
+        <span class="hero-stat-label">OPA before Claude</span>
+      </div>
+      <div class="hero-stat-sep"></div>
+      <div class="hero-stat">
+        <span class="hero-stat-value">$0 local</span>
+        <span class="hero-stat-label">Docker Compose</span>
+      </div>
+    </div>
+
+    <div class="badge-row">
+      <span class="badge badge-cyan">Python</span>
+      <span class="badge badge-cyan">FastAPI</span>
+      <span class="badge badge-purple">OPA</span>
+      <span class="badge badge-purple">JWT</span>
+      <span class="badge badge-green">PostgreSQL / pgvector</span>
+      <span class="badge badge-yellow">Claude Sonnet 4.6</span>
+      <span class="badge badge-orange">Docker</span>
+    </div>
+
+    <div class="hero-ctas">
+      <a href="https://github.com/AdventuringGhost/covenant" class="btn btn-primary">
+        ↗ View on GitHub
+      </a>
+      <a href="https://adventuringghost.com" class="btn btn-outline">
+        ← Back to portfolio
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ── What it does ───────────────────────────────────────────── -->
+<section id="what-it-does">
+  <div class="container">
+    <p class="label">What it does</p>
+    <h2>Policy-enforced AI in four components</h2>
+    <p>
+      Covenant is a FastAPI service that layers four components in strict order.
+      Each handles exactly one responsibility. The sequence is the security model:
+      identity first, policy second, retrieval third, generation last.
+    </p>
+
+    <div class="component-grid">
+
+      <div class="component-card component-card-purple">
+        <div class="component-icon">🪪</div>
+        <div class="component-name">JWT</div>
+        <h3>Identity</h3>
+        <p>Every request carries a Bearer token. FastAPI middleware validates the
+        signature, extracts <span class="mono text-purple">role</span>,
+        <span class="mono text-purple">user_id</span>, and
+        <span class="mono text-purple">tenant_id</span>, and builds the
+        claims dict passed to OPA.</p>
+      </div>
+
+      <div class="component-card component-card-cyan">
+        <div class="component-icon">🛡️</div>
+        <div class="component-name">OPA</div>
+        <h3>Policy gate</h3>
+        <p>OPA evaluates <span class="mono text-cyan">covenant.authz.allow</span>
+        against the JWT claims, request path, and body. If the result is
+        <span class="mono text-red" style="color:var(--red)">false</span>,
+        FastAPI returns 403 immediately — Claude never runs.</p>
+      </div>
+
+      <div class="component-card component-card-green">
+        <div class="component-icon">🔍</div>
+        <div class="component-name">pgvector</div>
+        <h3>Scoped retrieval</h3>
+        <p>The query is embedded and run as a cosine similarity search over
+        the <span class="mono text-green">documents</span> table, filtered by
+        <span class="mono text-green">tenant_id</span>. The AI only sees
+        documents it is already permitted to see.</p>
+      </div>
+
+      <div class="component-card component-card-yellow">
+        <div class="component-icon">🤖</div>
+        <div class="component-name">Claude</div>
+        <h3>Generation</h3>
+        <p>Claude Sonnet 4.6 generates a response from the permitted documents.
+        The system prompt is cached via
+        <span class="mono text-yellow">cache_control: ephemeral</span>.
+        Claude never touches a request OPA denied.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Three-role RBAC proof ──────────────────────────────────── -->
+<section id="rbac">
+  <div class="container">
+    <p class="label">Three-role RBAC proof</p>
+    <h2>Who can see what — enforced by Rego</h2>
+    <p>
+      Covenant ships with three roles. The access matrix is defined entirely in Rego.
+      Changing a permission means changing a policy file and committing a PR —
+      not touching application code.
+    </p>
+
+    <!-- Role / access table -->
+    <div class="rbac-table-wrap">
+      <table class="rbac-table">
+        <thead>
+          <tr>
+            <th class="col-role">Endpoint</th>
+            <th class="col-admin">admin</th>
+            <th class="col-user">user</th>
+            <th class="col-audit">auditor</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>POST /query (regular)</td>
+            <td class="access-yes">✓ 200</td>
+            <td class="access-yes">✓ 200</td>
+            <td class="access-no">✗ 403</td>
+          </tr>
+          <tr>
+            <td>POST /query (sensitive: true)</td>
+            <td class="access-yes">✓ 200</td>
+            <td class="access-no">✗ 403</td>
+            <td class="access-no">✗ 403</td>
+          </tr>
+          <tr>
+            <td>POST /query (cross-tenant)</td>
+            <td class="access-yes">✓ 200</td>
+            <td class="access-no">✗ 403</td>
+            <td class="access-no">✗ 403</td>
+          </tr>
+          <tr>
+            <td>GET /audit</td>
+            <td class="access-yes">✓ 200</td>
+            <td class="access-no">✗ 403</td>
+            <td class="access-yes">✓ 200</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tabbed curl demo -->
+    <div class="tab-container" style="margin-top: 40px;">
+      <p style="margin-bottom: 12px; font-size: .88rem;">
+        The same request — <span class="mono">POST /query</span> with
+        <span class="mono">{"sensitive": true}</span> — hits OPA with a different
+        JWT each time. The response is determined entirely by the Rego policy.
+      </p>
+
+      <div class="tab-bar">
+        <button class="tab-btn tab-btn-active" onclick="showTab('admin')">admin — 200</button>
+        <button class="tab-btn" onclick="showTab('user')">user — 403</button>
+        <button class="tab-btn" onclick="showTab('auditor')">auditor — 403</button>
+      </div>
+
+      <div id="tab-admin" class="tab-pane">
+        <pre><span class="c-comment"># admin JWT: role=admin, tenant_id=acme</span>
+curl -s -X POST http://localhost:8000/query \
+  -H <span class="c-val">"Authorization: Bearer &lt;admin-jwt&gt;"</span> \
+  -H <span class="c-val">"Content-Type: application/json"</span> \
+  -d <span class="c-val">'{"query": "show Q4 revenue breakdown", "tenant_id": "acme", "sensitive": true}'</span>
+
+<span class="c-comment"># OPA input: {role: "admin", path: "/query", body.sensitive: true}</span>
+<span class="c-comment"># OPA result: allow = true  (admin rule matches)</span>
+
+HTTP <span class="c-status-ok">200 OK</span>
+{
+  <span class="c-key">"response"</span>: <span class="c-val">"Q4 revenue: $4.2M total, up 18% YoY. Breakdown by region..."</span>,
+  <span class="c-key">"documents_used"</span>: <span class="c-val">3</span>,
+  <span class="c-key">"opa_decision"</span>: <span class="c-val">"allow"</span>
+}</pre>
+      </div>
+
+      <div id="tab-user" class="tab-pane" style="display:none;">
+        <pre><span class="c-comment"># user JWT: role=user, tenant_id=acme</span>
+curl -s -X POST http://localhost:8000/query \
+  -H <span class="c-val">"Authorization: Bearer &lt;user-jwt&gt;"</span> \
+  -H <span class="c-val">"Content-Type: application/json"</span> \
+  -d <span class="c-val">'{"query": "show Q4 revenue breakdown", "tenant_id": "acme", "sensitive": true}'</span>
+
+<span class="c-comment"># OPA input: {role: "user", path: "/query", body.sensitive: true}</span>
+<span class="c-comment"># OPA result: allow = false  (user rule requires not input.body.sensitive)</span>
+
+HTTP <span class="c-status-err">403 Forbidden</span>
+{
+  <span class="c-key">"error"</span>: <span class="c-val">"access denied"</span>,
+  <span class="c-key">"policy"</span>: <span class="c-val">"user:sensitive-blocked"</span>,
+  <span class="c-key">"opa_decision"</span>: <span class="c-val">"deny"</span>
+}</pre>
+      </div>
+
+      <div id="tab-auditor" class="tab-pane" style="display:none;">
+        <pre><span class="c-comment"># auditor JWT: role=auditor, tenant_id=acme</span>
+curl -s -X POST http://localhost:8000/query \
+  -H <span class="c-val">"Authorization: Bearer &lt;auditor-jwt&gt;"</span> \
+  -H <span class="c-val">"Content-Type: application/json"</span> \
+  -d <span class="c-val">'{"query": "show Q4 revenue breakdown", "tenant_id": "acme", "sensitive": true}'</span>
+
+<span class="c-comment"># OPA input: {role: "auditor", path: "/query", body.sensitive: true}</span>
+<span class="c-comment"># OPA result: allow = false  (auditor has no /query rule — default deny)</span>
+
+HTTP <span class="c-status-err">403 Forbidden</span>
+{
+  <span class="c-key">"error"</span>: <span class="c-val">"access denied"</span>,
+  <span class="c-key">"policy"</span>: <span class="c-val">"auditor:query-denied"</span>,
+  <span class="c-key">"opa_decision"</span>: <span class="c-val">"deny"</span>
+}</pre>
+      </div>
+    </div>
+
+    <!-- Rego policy -->
+    <div class="code-block" style="margin-top: 40px;">
+      <div class="code-header">
+        <span class="code-title">policy/covenant.authz — the complete access policy</span>
+        <span class="code-lang">Rego v1</span>
+      </div>
+      <pre><span class="rego-kw">package</span> <span class="rego-pkg">covenant.authz</span>
+
+<span class="rego-kw">import</span> <span class="rego-pkg">rego.v1</span>
+
+<span class="rego-comment"># Default to deny — nothing passes unless explicitly permitted</span>
+<span class="rego-kw">default</span> allow <span class="rego-op">:=</span> <span class="rego-kw">false</span>
+
+<span class="rego-comment"># admins can query everything, including sensitive and cross-tenant</span>
+allow <span class="rego-kw">if</span> {
+    input.claims.role <span class="rego-op">==</span> <span class="rego-str">"admin"</span>
+    input.path <span class="rego-kw">in</span> {<span class="rego-str">"/query"</span>, <span class="rego-str">"/audit"</span>}
+}
+
+<span class="rego-comment"># users can query non-sensitive docs within their own tenant only</span>
+allow <span class="rego-kw">if</span> {
+    input.claims.role <span class="rego-op">==</span> <span class="rego-str">"user"</span>
+    input.path <span class="rego-op">==</span> <span class="rego-str">"/query"</span>
+    <span class="rego-kw">not</span> input.body.sensitive
+    input.claims.tenant_id <span class="rego-op">==</span> input.body.tenant_id
+}
+
+<span class="rego-comment"># auditors can read the audit log — and nothing else</span>
+allow <span class="rego-kw">if</span> {
+    input.claims.role <span class="rego-op">==</span> <span class="rego-str">"auditor"</span>
+    input.path <span class="rego-op">==</span> <span class="rego-str">"/audit"</span>
+}</pre>
+    </div>
+  </div>
+</section>
+
+<!-- ── Architecture ────────────────────────────────────────────── -->
+<section id="architecture">
+  <div class="container">
+    <p class="label">Architecture</p>
+    <h2>Six steps — OPA is the gate</h2>
+    <p>
+      The request flow is linear. Each step hands off to the next only if the
+      previous step passed. The OPA check is not advisory — it is a hard stop
+      in the middleware chain. Nothing downstream runs if Rego returns false.
+    </p>
+
+    <div class="flow-steps" style="margin-top: 40px;">
+
+      <div class="flow-step">
+        <div class="step-num">01</div>
+        <div class="step-body">
+          <h3>Client sends request with Bearer JWT</h3>
+          <p>
+            The client POSTs to <span class="mono">/query</span> with a JSON body
+            and an <span class="mono">Authorization: Bearer &lt;jwt&gt;</span> header.
+            No other auth mechanism is accepted.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">02</div>
+        <div class="step-body">
+          <h3>JWT middleware validates and extracts claims</h3>
+          <p>
+            FastAPI middleware verifies the JWT signature against the HS256 secret,
+            checks expiry, and extracts <span class="mono">role</span>,
+            <span class="mono">user_id</span>, and <span class="mono">tenant_id</span>
+            into a <span class="mono">claims</span> dict. A missing or invalid token
+            returns 401 before OPA is ever called.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num step-num-gate">03</div>
+        <div class="step-body">
+          <div class="gate-banner">🛡️ OPA access gate</div>
+          <h3>Policy check — hard ALLOW or DENY</h3>
+          <p>
+            FastAPI POSTs the input bundle <span class="mono">{claims, path, method, body}</span>
+            to the OPA REST API at <span class="mono">http://opa:8181/v1/data/covenant/authz</span>.
+            OPA evaluates <span class="mono">covenant.authz.allow</span>. If the result is
+            <strong class="text-green">true</strong>, execution continues.
+            If <strong style="color:var(--red)">false</strong>, FastAPI returns
+            <strong style="color:var(--red)">403 Forbidden</strong> immediately.
+            Claude is never called.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">04</div>
+        <div class="step-body">
+          <h3>pgvector semantic search — scoped to tenant</h3>
+          <p>
+            The query text is embedded via <span class="mono">sentence-transformers</span>
+            and run as a cosine similarity search against the
+            <span class="mono">documents</span> table, filtered by
+            <span class="mono">tenant_id = claims.tenant_id</span>.
+            Cross-tenant results are impossible at the query level —
+            not just excluded from the response.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">05</div>
+        <div class="step-body">
+          <h3>Claude generates response from permitted documents</h3>
+          <p>
+            The permitted documents are passed to Claude Sonnet 4.6 alongside the
+            user query. The system prompt is cached with
+            <span class="mono">cache_control: ephemeral</span>, keeping latency low
+            on repeated requests. Claude sees only what OPA allowed through.
+          </p>
+        </div>
+      </div>
+
+      <div class="flow-step">
+        <div class="step-num">06</div>
+        <div class="step-body">
+          <h3>Response returned + audit log written</h3>
+          <p>
+            The response is returned to the client. An audit log entry is written
+            with <span class="mono">timestamp</span>, <span class="mono">user_id</span>,
+            <span class="mono">role</span>, <span class="mono">tenant_id</span>,
+            <span class="mono">query_hash</span>, <span class="mono">docs_returned</span>,
+            and <span class="mono">opa_decision</span>. Every access — allowed or denied
+            — is on the record.
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Challenges ─────────────────────────────────────────────── -->
+<section id="challenges">
+  <div class="container">
+    <p class="label">Challenges &amp; fixes</p>
+    <h2>Real blockers. Root causes. Actual fixes.</h2>
+    <p>
+      Every one of these was a genuine development blocker. The solutions are in the repo.
+    </p>
+
+    <div style="display: flex; flex-direction: column; gap: 20px; margin-top: 40px;">
+
+      <!-- Challenge 1 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">01</div>
+          <div class="challenge-title">OPA Docker image ran a REST server, not an eval binary</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              The official <span class="mono">openpolicyagent/opa</span> Docker image starts
+              a REST server on port 8181. The code was calling OPA as if it were a CLI eval
+              tool, passing policy files as arguments — which works locally but silently fails
+              inside the container because the server ignores CLI-style args and just
+              listens for HTTP requests.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Committed to the REST server model entirely. Docker Compose starts OPA with
+              <span class="mono">opa run --server --addr :8181 /policies</span>, and FastAPI
+              sends policy input via <span class="mono">POST /v1/data/covenant/authz</span>.
+              Policies are mounted as a volume so edits apply without a rebuild.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              OPA has three deployment modes: sidecar REST server, Go library (in-process),
+              and CLI eval. Pick one before you write a line of integration code.
+              Mixing mental models wastes hours.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 2 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">02</div>
+          <div class="challenge-title">Rego v1 syntax broke existing policy files</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              OPA 0.68+ requires <span class="mono">import rego.v1</span> or the
+              <span class="mono">--v1-compatible</span> flag. Legacy Rego using
+              <span class="mono">= </span> instead of <span class="mono">:=</span>
+              in rule heads throws a cryptic parse error that doesn't say
+              "version mismatch" — it just says the rule is invalid.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Added <span class="mono">import rego.v1</span> to every policy file.
+              Pinned <span class="mono">openpolicyagent/opa:0.68.0</span> in
+              <span class="mono">docker-compose.yml</span> so future pulls don't silently
+              break policies. Rego v1 is stricter and clearer — the
+              <span class="mono">if</span> keyword in rule heads reads like intent.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Pin your OPA version. Rego v1 is the right direction, but the error messages
+              don't always point at the version as the root cause.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 3 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">03</div>
+          <div class="challenge-title">pgvector requires superuser to install the extension</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              <span class="mono">CREATE EXTENSION vector</span> requires superuser or the
+              <span class="mono">pg_extension_owner</span> role. The application DB user
+              <span class="mono">covenant_app</span> can't run it. The Docker Compose init
+              script ran as the app user by default, so the extension was never created —
+              causing a silent <span class="mono">column type "vector" does not exist</span>
+              error at migration time.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Split <span class="mono">docker-entrypoint-initdb.d/</span> into two files:
+              <span class="mono">00_superuser.sql</span> (runs as <span class="mono">postgres</span>,
+              creates the extension) and <span class="mono">01_app.sql</span> (runs as
+              <span class="mono">covenant_app</span>, creates schema and tables). PostgreSQL
+              processes init scripts alphabetically — numeric prefixes enforce ordering.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              DB initialisation ordering is load-bearing. Name init scripts with numeric
+              prefixes. Know which operations need superuser before you write the scripts.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 4 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">04</div>
+          <div class="challenge-title">pgvector Docker build failed on WSL2 — missing kernel headers</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              Attempting to build pgvector from source inside a Docker container on WSL2
+              failed because pgvector's <span class="mono">Makefile</span> links against
+              PostgreSQL server headers that require matching kernel build tools. The WSL2
+              kernel doesn't ship full headers, so <span class="mono">make</span> exited
+              with a cryptic <span class="mono">pg_config: not found</span> error
+              even when PostgreSQL was installed.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Switched from building pgvector from source to using the official
+              <span class="mono">pgvector/pgvector:pg16</span> image, which ships
+              pre-compiled binaries. No kernel build step, no WSL2 header mismatch,
+              extension ready on container start.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Don't build database extensions from source unless you need a specific
+              unreleased version. The official prebuilt image exists for a reason.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Challenge 5 -->
+      <div class="challenge-card">
+        <div class="challenge-header">
+          <div class="challenge-num">05</div>
+          <div class="challenge-title">Short-lived JWT expiry caused random 401s during demos</div>
+        </div>
+        <div class="challenge-body">
+          <div class="challenge-block">
+            <div class="challenge-block-label label-problem">Problem</div>
+            <p>
+              Test JWTs used a 15-minute expiry — which is a sensible production default
+              but causes random 401s during extended demo sessions. The error surfaced as
+              an OPA claim-validation failure, not a clear "token expired" message, making
+              it confusing to debug mid-demo.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-fix">Fix</div>
+            <p>
+              Added a <span class="mono">get_token()</span> helper that inspects the
+              <span class="mono">exp</span> claim before every request and auto-refreshes
+              if the token is within 60 seconds of expiry. Demo tokens now use a 24-hour
+              TTL configurable via <span class="mono">.env</span> — kept separate from
+              the production token lifetime setting.
+            </p>
+          </div>
+          <div class="challenge-block">
+            <div class="challenge-block-label label-lesson">Lesson</div>
+            <p>
+              Separate "demo token TTL" from "production token TTL" in config from day one.
+              Auth debugging during a live demo is the worst kind of debugging.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── What this demonstrates ─────────────────────────────────── -->
+<section id="demonstrates">
+  <div class="container">
+    <p class="label">What this demonstrates</p>
+    <h2>Skills proven end-to-end</h2>
+
+    <div class="demonstrates-grid">
+
+      <div class="demo-card">
+        <div class="demo-icon">📜</div>
+        <h3>Policy-as-infrastructure</h3>
+        <p>OPA Rego policies live in version control. Access rules are reviewable PRs,
+        tested in CI, and deployed like code. Changing a permission is a diff, not a
+        database row or a config file nobody owns.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🚫</div>
+        <h3>Default-deny</h3>
+        <p><span class="mono text-purple">default allow := false</span> — every identity
+        starts with zero access. Permissions are explicit grants. Nothing passes unless
+        a Rego rule explicitly permits it.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">📋</div>
+        <h3>Audit trail</h3>
+        <p>Every OPA decision is written to the audit log with the full input bundle —
+        who asked, what role, what path, what was allowed or denied. Auditors can query
+        the log; they cannot query documents.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🛡️</div>
+        <h3>Hard gate — AI cannot bypass access control</h3>
+        <p>OPA evaluates in the middleware chain, before Claude runs. There is no system
+        prompt that bypasses Rego. A 403 from OPA is a 403 — the model never sees the
+        request, so it cannot be prompted around the policy.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">🔍</div>
+        <h3>Auditor isolation</h3>
+        <p>Auditors have an explicit ALLOW on <span class="mono">/audit</span> and an
+        explicit DENY on <span class="mono">/query</span>. This is not an oversight in
+        the policy — it is the policy. The separation is proven by the RBAC demo.</p>
+      </div>
+
+      <div class="demo-card">
+        <div class="demo-icon">⚡</div>
+        <h3>Prompt caching</h3>
+        <p>Claude's system prompt uses <span class="mono">cache_control: ephemeral</span>.
+        The cache TTL is 5 minutes — repeated requests in the same session hit the cache
+        and return significantly faster. Near-zero latency penalty on high-frequency
+        query endpoints.</p>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Real-world value ───────────────────────────────────────── -->
+<section id="value">
+  <div class="container">
+    <p class="label">Real-world value</p>
+    <h2>What this costs. What it replaces.</h2>
+    <p>
+      Covenant runs entirely in Docker Compose locally at zero cost.
+      The table below shows what it costs at scale — and what it displaces.
+    </p>
+
+    <!-- Cost table -->
+    <div style="margin-top: 48px;">
+      <p class="label" style="margin-bottom: 8px;">Monthly cost breakdown</p>
+
+      <div class="cost-table-wrap">
+        <table class="cost-table">
+          <thead>
+            <tr>
+              <th>Component</th>
+              <th class="col-local">Local / Portfolio</th>
+              <th class="col-startup">Startup (1k users)</th>
+              <th class="col-ent">Enterprise (100k users)</th>
+              <th class="col-manual">Manual compliance</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Database<br><span style="color:var(--text-dim);font-size:.72rem;">PostgreSQL + pgvector</span></td>
+              <td>$0 <span style="color:var(--text-dim);font-size:.78rem;">local</span></td>
+              <td>~$10 <span style="color:var(--text-dim);font-size:.78rem;">managed</span></td>
+              <td>~$50 <span style="color:var(--text-dim);font-size:.78rem;">RDS multi-AZ</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>Claude Sonnet 4.6 API<br><span style="color:var(--text-dim);font-size:.72rem;">per-token, scales with query volume</span></td>
+              <td>$0</td>
+              <td>$5–15</td>
+              <td>$10–40</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>OPA server<br><span style="color:var(--text-dim);font-size:.72rem;">sidecar or standalone</span></td>
+              <td>$0</td>
+              <td>included</td>
+              <td>included</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td>Manual access review cycles<br><span style="color:var(--text-dim);font-size:.72rem;">legal review, audit prep, quarterly reviews</span></td>
+              <td>—</td>
+              <td>—</td>
+              <td>—</td>
+              <td>$5k–20k</td>
+            </tr>
+            <tr>
+              <td>Monthly total</td>
+              <td>$0</td>
+              <td>$15–25</td>
+              <td>$60–90</td>
+              <td>$5k–20k</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="cost-note">Estimates based on AWS/Anthropic pricing, April 2026. Claude API cost scales with query volume — low-traffic deployments run at the lower end.</div>
+      </div>
+    </div>
+
+    <!-- Industry use cases -->
+    <div style="margin-top: 56px;">
+      <p class="label" style="margin-bottom: 8px;">Industry use cases</p>
+      <h3 style="font-size:1.1rem; margin-bottom: 6px; color: var(--text);">The same architecture, applied to real compliance problems</h3>
+      <p style="margin-bottom: 0;">Three industries where policy-enforced AI directly addresses regulatory and operational risk.</p>
+
+      <div class="industry-grid">
+        <div class="industry-card">
+          <div class="industry-icon">💳</div>
+          <div class="industry-name">Fintech</div>
+          <h3>Multi-tenant financial report access</h3>
+          <ul>
+            <li>Analysts query only their assigned client's data — tenant isolation enforced at the pgvector level</li>
+            <li>Admins access cross-tenant reports; OPA rule explicit, auditable, reviewed in PRs</li>
+            <li>Auditors read the full decision log for compliance evidence without touching financial records</li>
+            <li>Rego policy change for a new data class takes minutes, not a sprint</li>
+          </ul>
+        </div>
+
+        <div class="industry-card">
+          <div class="industry-icon">🏥</div>
+          <div class="industry-name">Healthtech</div>
+          <h3>HIPAA-adjacent patient record isolation</h3>
+          <ul>
+            <li>Clinicians query only their assigned patient cohort — cross-patient data blocked at OPA before Claude sees it</li>
+            <li>AI cannot be prompted to surface another patient's records — the gate is in the middleware, not the model</li>
+            <li>Audit log provides access evidence for HIPAA review without querying the records themselves</li>
+            <li>Role changes take effect on next request — no cache poisoning, no stale session state</li>
+          </ul>
+        </div>
+
+        <div class="industry-card">
+          <div class="industry-icon">🏭</div>
+          <div class="industry-name">Manufacturing</div>
+          <h3>IP-sensitive technical document search</h3>
+          <ul>
+            <li>Product line engineers query only their product's documents — pgvector filter enforces isolation</li>
+            <li>Auditors read change logs for their assigned product lines; they cannot query design specs</li>
+            <li>New product line access provisioned by adding a Rego rule, not a DB role grant</li>
+            <li>IP leakage between product lines is impossible at the retrieval layer</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- Integration modes -->
+    <div style="margin-top: 56px;">
+      <p class="label" style="margin-bottom: 8px;">Integration paths</p>
+      <h3 style="font-size:1.1rem; margin-bottom: 6px; color: var(--text);">Works with what you already have</h3>
+      <p style="margin-bottom: 0;">Two ways to deploy Covenant, depending on whether you're adding it to an existing stack or starting fresh.</p>
+
+      <div class="integration-grid">
+        <div class="integration-card">
+          <div class="integration-mode integration-mode-green">Drop-in</div>
+          <div class="integration-timeline">⏱ 3–5 days</div>
+          <h3>Greenfield or new service</h3>
+          <p>
+            Clone the repo, configure <span class="mono">covenant.env</span> with your
+            JWT secret and Claude API key, and run
+            <span class="mono">docker compose up</span>. OPA, PostgreSQL with pgvector,
+            and FastAPI all start together. Replace the placeholder endpoint with your
+            production model ID.
+          </p>
+          <div class="integration-steps">
+            <div class="integration-step">
+              <div class="integration-step-num">1</div>
+              <span>Clone repo and configure <span class="mono">covenant.env</span> with JWT secret and Claude key</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">2</div>
+              <span><span class="mono">docker compose up</span> — OPA, Postgres+pgvector, FastAPI start together</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">3</div>
+              <span>Load your documents and run the three-role RBAC demo to verify policy</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">4</div>
+              <span>Write Rego rules for your roles — start from the included policy template</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="integration-card">
+          <div class="integration-mode integration-mode-purple">Wrap-around</div>
+          <div class="integration-timeline">⏱ 1–2 weeks</div>
+          <h3>Existing API with AI features</h3>
+          <p>
+            Add OPA as a sidecar to your existing API gateway. Write Rego policies for
+            your current role model. Extend your Postgres instance with the pgvector
+            extension and a <span class="mono">tenant_id</span> column. Point your
+            existing AI layer to call OPA before model invocation.
+          </p>
+          <div class="integration-steps">
+            <div class="integration-step">
+              <div class="integration-step-num">1</div>
+              <span>Add OPA sidecar to your existing service — mount policies as a volume</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">2</div>
+              <span>Add JWT validation middleware if not already present</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">3</div>
+              <span>Write Rego rules for your existing roles — start from the default-deny base</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">4</div>
+              <span>Run <span class="mono">CREATE EXTENSION vector</span> and add <span class="mono">tenant_id</span> to document tables</span>
+            </div>
+            <div class="integration-step">
+              <div class="integration-step-num">5</div>
+              <span>Insert OPA check before model call — verify with the three-role curl demo</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ── Portfolio arc ──────────────────────────────────────────── -->
+<section class="arc-section" id="arc">
+  <div class="container">
+    <p class="label">Portfolio arc</p>
+    <h2>Building toward Watershed</h2>
+    <p>
+      Each project is a deliberate step: establish cloud and AI fundamentals,
+      prove Kubernetes security automation, enforce access policy at the AI layer,
+      then apply all of it to a data governance problem.
+    </p>
+
+    <div class="arc-grid">
+
+      <div class="arc-card arc-card-live">
+        <div class="arc-project-num">Project 01</div>
+        <div class="arc-project-name">Email Agent</div>
+        <div class="arc-project-desc">
+          Azure VM + Claude Sonnet reading, triaging, and drafting replies to Gmail.
+          DevSecOps foundations: Terraform, Key Vault, IaC lifecycle for $1.50.
+        </div>
+        <span class="arc-status arc-status-live">Live</span>
+      </div>
+
+      <div class="arc-card arc-card-live">
+        <div class="arc-project-num">Project 02</div>
+        <div class="arc-project-name">Warden</div>
+        <div class="arc-project-desc">
+          Self-healing Kubernetes security agent. Falco + OPA Gatekeeper + Claude on AKS.
+          AI triage, auto-patch, and runbook generation for ~$2.
+        </div>
+        <span class="arc-status arc-status-live">Live</span>
+      </div>
+
+      <div class="arc-card arc-card-live-purple">
+        <div class="arc-project-num">Project 03</div>
+        <div class="arc-project-name">Covenant</div>
+        <div class="arc-project-desc">
+          Policy-enforced AI access control. OPA as the hard gate between JWT identity
+          and Claude. Three-role RBAC proven end-to-end.
+        </div>
+        <span class="arc-status arc-status-current">Live — you are here</span>
+      </div>
+
+      <div class="arc-card arc-card-planned">
+        <div class="arc-project-num">Project 04</div>
+        <div class="arc-project-name">Watershed</div>
+        <div class="arc-project-desc">
+          Data security and governance platform. Everything that came before,
+          applied to protecting sensitive data at rest and in motion.
+        </div>
+        <span class="arc-status arc-status-planned">Planned</span>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ── Footer ─────────────────────────────────────────────────── -->
+<footer>
+  <div class="container">
+    <p>
+      Built by <a href="https://adventuringghost.com">Skipper</a> ·
+      <a href="https://github.com/AdventuringGhost/covenant">github.com/AdventuringGhost/covenant</a> ·
+      <a href="https://adventuringghost.com">adventuringghost.com</a>
+    </p>
+  </div>
+</footer>
+
+<script>
+  function showTab(role) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('tab-btn-active'));
+    document.getElementById('tab-' + role).style.display = 'block';
+    event.currentTarget.classList.add('tab-btn-active');
+  }
+</script>
+
+</body>
+</html>

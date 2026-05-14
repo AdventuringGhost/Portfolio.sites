@@ -12,9 +12,9 @@ const siteUrl =
   process.env.NEXT_PUBLIC_SITE_URL || "https://adventuringghost.com";
 
 export const metadata: Metadata = {
-  title: "AdventuringGhost - Cloud & DevOps Engineer",
+  title: "Katherine Schlosser — DevSecOps Engineer",
   description:
-    "I build resilient cloud infrastructure, automate deployments, and secure enterprise networks.",
+    "DevSecOps engineer specializing in Kubernetes security, policy-as-code, and AI-driven automation. Building security-first edge-to-cloud infrastructure.",
   keywords: [
     "Cloud Engineer",
     "DevOps",
@@ -44,9 +44,9 @@ export const metadata: Metadata = {
     canonical: "/",
   },
   openGraph: {
-    title: "AdventuringGhost - Cloud & DevOps Engineer",
+    title: "Katherine Schlosser — DevSecOps Engineer",
     description:
-      "I build resilient cloud infrastructure, automate deployments, and secure enterprise networks.",
+      "DevSecOps engineer specializing in Kubernetes security, policy-as-code, and AI-driven automation. Building security-first edge-to-cloud infrastructure.",
     url: "https://adventuringghost.com",
     siteName: "AdventuringGhost",
     images: [
@@ -54,7 +54,7 @@ export const metadata: Metadata = {
         url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "AdventuringGhost - Cloud & DevOps Engineer",
+        alt: "Katherine Schlosser — DevSecOps Engineer",
       },
     ],
     locale: "en_US",
@@ -62,9 +62,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "AdventuringGhost - Cloud & DevOps Engineer",
+    title: "Katherine Schlosser — DevSecOps Engineer",
     description:
-      "I build resilient cloud infrastructure, automate deployments, and secure enterprise networks.",
+      "DevSecOps engineer specializing in Kubernetes security, policy-as-code, and AI-driven automation. Building security-first edge-to-cloud infrastructure.",
     images: ["/og-image.jpg"],
     creator: "@adventuringghost",
   },
@@ -127,7 +127,7 @@ export default function RootLayout({
           height: 630,
         },
         description:
-          "I build resilient cloud infrastructure, automate deployments, and secure enterprise networks.",
+          "DevSecOps engineer specializing in Kubernetes security, policy-as-code, and AI-driven automation. Building security-first edge-to-cloud infrastructure.",
         jobTitle: "Cloud & DevOps Engineer",
         knowsAbout: allSkills,
         sameAs: [

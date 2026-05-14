@@ -1,0 +1,43 @@
+Most IoT tutorials end at the happy path: sensor publishes to MQTT, broker forwards to cloud, cloud stores the reading. That pipeline works fine in a data centre. In a rural edge environment — a grain elevator hours from the nearest city, a greenhouse on a remote property, a water treatment facility on a reservation — the network is not a reliable substrate. It's an intermittent resource that fails on a schedule you don't control.
+
+Watershed is designed around that reality. The local buffer is not a fallback. It's the primary storage layer. Cloud sync is a background process that replays it when connectivity returns. Anomaly detection runs on every reading locally, not on the cloud-synced batch.
+
+## The problem with batch-sync approaches
+
+A standard telemetry pipeline that buffers locally and syncs in batches has a detection latency problem: anomalies are flagged when the batch arrives at the cloud, not when the sensor reading occurs. For a thermal sensor monitoring critical equipment, the difference between "anomaly detected at reading time" and "anomaly detected at next sync" could be the difference between catching a failure and arriving after it.
+
+Watershed's Claude anomaly detection runs on the rolling local window — the last N readings held in memory — on every new MQTT message. The cloud sync and the anomaly detection are decoupled. The sensor can be offline for an hour, and every reading during that hour is analyzed in real time locally.
+
+## The SQLite buffer design
+
+Every MQTT message is written to SQLite before anything else happens. The schema is simple: `reading_id`, `topic`, `payload`, `timestamp`, `synced` (boolean). The async agent writes the reading, then analyzes it, then marks it synced if the cloud push succeeds. If the cloud push fails, the reading stays in the buffer with `synced=false` and gets retried in the next reconnect cycle.
+
+This ordering matters. Writing to SQLite first means no reading is lost if the analysis step fails, the cloud connection drops between write and sync, or the process restarts mid-operation. SQLite's durability guarantees hold even across ungraceful shutdowns.
+
+The sync query is straightforward:
+
+```sql
+SELECT * FROM readings WHERE synced = 0 ORDER BY timestamp ASC LIMIT 100;
+```
+
+Buffered readings replay to AWS IoT Core in timestamp order — the cloud receives them in the sequence they occurred, not the sequence they synced.
+
+## The anomaly detection architecture
+
+Claude Sonnet 4.6 receives a rolling window of the last five readings on every new message. The prompt includes the full telemetry history in that window, the sensor type, the expected operating range, and instructions to classify severity and return a structured diagnosis with a remediation recommendation.
+
+In testing, a thermal escalation from 28°C to 60°C across five consecutive readings was classified as high severity with a specific diagnosis ("rapid thermal escalation consistent with cooling system failure or blockage") and a specific remediation recommendation ("shut down equipment and inspect cooling system before resuming operation"). That's not a generic alert — it's a diagnosis the operator can act on.
+
+The rolling window approach means Claude sees trends, not just point values. A single reading at 45°C might be within the acceptable operating range for some equipment. Five consecutive readings escalating from 28°C to 60°C is a different pattern with a different implication. The model reasons over the sequence, which is why sending the window rather than the individual reading matters.
+
+## AWS IoT Core and Terraform device identity
+
+The cloud sink is AWS IoT Core, provisioned via Terraform: an IoT Thing, an X.509 certificate, and an attached policy that permits publish to the device's specific topic prefix and nothing else. The certificate is the device identity — no shared credentials, no username/password, no API key stored on the edge node.
+
+The Terraform resource set for a single device is small: `aws_iot_thing`, `aws_iot_certificate`, `aws_iot_policy`, `aws_iot_thing_principal_attachment`. The total AWS spend for Watershed across all sessions was approximately $0.05 — IoT Core charges per message, and at the telemetry volumes of a single test device the cost is essentially zero.
+
+## What offline-first actually means
+
+Offline-first is not a feature. It's a design constraint that changes the architecture of every component. The question is never "what happens when connectivity is available" — that's the easy case. The question is always "what happens when it isn't, and what is the exact state of the system when it comes back."
+
+For Watershed, that answer is documented and proven: readings are in SQLite in order, `synced=false`. On reconnect the async loop replays them to AWS IoT Core in timestamp order. The cloud state after reconnect is identical to what it would have been if connectivity had never been lost. That's what resilience means in practice — not "the system stayed up" but "the system recovered to a known correct state."

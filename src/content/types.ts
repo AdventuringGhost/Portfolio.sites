@@ -84,6 +84,13 @@ export interface Project {
   };
   completionImage?: string;
   completionImageCaption?: string;
+  portfolioArc?: {
+    name: string;
+    summary: string;
+    peers: string[]; // slugs of ALL projects in the arc, including this one
+    costs: { label: string; amount: string }[];
+    totalCost: string;
+  };
 }
 
 export interface SiteContent {
