@@ -1461,7 +1461,7 @@ async function analyzeToolTrends(
     },
     {
       slug: "nomad-edge",
-      title: "Nomad Edge — SCDC Edge Platform",
+      title: "Nomad Edge — Rural Edge Orchestration Platform",
       tagline:
         "SNS over Kinesis. Nomad over EKS. $8/month over $80. The cost architecture of rural edge computing — and why every tradeoff was the right call.",
       cardVariant: "primary",
@@ -1523,6 +1523,7 @@ async function analyzeToolTrends(
           "Edge workers can continue operating while offline and reconcile state when connectivity returns.",
           "New sites can be brought online with a small Terraform change and a Packer-built image.",
           "Operators gain a single pane of glass for workload health across distant clients.",
+          "Total infrastructure cost: ~$8/month in production — a 90% reduction against an equivalent EKS + Kinesis architecture.",
         ],
       },
       codeSample: {
