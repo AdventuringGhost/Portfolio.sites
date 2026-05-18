@@ -1,0 +1,43 @@
+Software vulnerabilities cause outages. In physical robotics, they cause collisions. The security posture, update pipeline, and threat model all change when your workload has mass, velocity, and physical access to the real world. DevSecOps practitioners who have spent their careers on cloud-native systems will find familiar patterns here — and a set of constraints that don't exist anywhere else.
+
+## The threat model is different
+
+In cloud infrastructure, a compromised workload typically means data exfiltration, lateral movement, or resource abuse. You contain it, kill the pod, rotate the credentials, and investigate. The blast radius is logical.
+
+In physical robotics, a compromised workload can mean a manipulator arm that moves when it shouldn't, a mobile platform that ignores its safety envelope, or an update that bricks a unit that's physically inaccessible. The blast radius is physical — and physical damage doesn't roll back.
+
+This changes the security calculus in several ways:
+
+- **Availability is a safety property, not just an SLA.** A robot that can't receive a safety-critical update because the update pipeline is locked down is a different kind of risk than a web service that can't deploy. Downtime in physical systems can mean unsafe operating states persist longer than they should.
+- **Authentication at the edge is non-negotiable.** A compromised robot that accepts unsigned command payloads is a physical actuator under adversary control. Identity verification for every command — not just at session establishment — is the baseline, not a hardening step.
+- **Physical access changes the attacker model.** A robot operating in a warehouse, construction site, or agricultural field is physically accessible to anyone in that environment. Secure boot, tamper detection, and hardware attestation become relevant in ways they rarely are for cloud workloads.
+
+## Update pipelines for physical systems
+
+The standard cloud-native update model — continuous deployment, fast rollout, rollback on failed health check — doesn't transfer cleanly to physical systems. Several constraints change the approach:
+
+**Staged rollout with physical verification.** Deploying a new firmware version to 10% of a fleet and checking error rates works in software. In physical systems, you want a human or an automated physical test to confirm the new version behaves correctly before fleet-wide rollout. The health check is not just "did the process start" but "did the end-effector move to the correct position."
+
+**Mandatory rollback capability.** Cloud workloads can often recover from a bad deploy by re-pulling the previous image. Physical systems need a verified, tested rollback path — and that path needs to work when the system is in a degraded state, not just when everything is functioning normally.
+
+**Update windows aligned with operational context.** A robot in active use can't be updated mid-task. Update scheduling needs to be aware of operational state — idle, between tasks, in maintenance mode — and the pipeline needs to enforce this, not rely on operators to manually coordinate.
+
+## Identity and access at the physical layer
+
+Every command that causes physical action should be authenticated and authorized. This is more stringent than the model most cloud-native systems use, where authentication happens at session establishment and subsequent commands within the session inherit that identity.
+
+For physical systems, the relevant questions are:
+
+- **Who authorized this specific action, not just this session?** A valid session doesn't mean every command within it should be trusted without scoping.
+- **What is the provenance of this command payload?** Signed payloads from a known control plane are different from unsigned commands accepted over a local interface.
+- **What is the minimum permission set for this operation?** A robot running a pick-and-place routine doesn't need permission to modify its own safety parameters. Scoping permissions to the specific task reduces the impact of a compromised component.
+
+## What stays the same
+
+The fundamentals of DevSecOps don't change. Secrets management, audit logging, network segmentation, vulnerability scanning, and policy-as-code all apply directly. The tooling is often the same — OPA for policy enforcement, Falco-style syscall monitoring for runtime anomaly detection, immutable infrastructure for node configuration.
+
+What changes is the consequence model. In cloud systems, security failures are primarily information security events. In physical systems, they can be safety events. The engineering discipline is the same; the stakes are different, and the system design needs to reflect that.
+
+---
+
+*This is an area I'm actively developing — building toward edge systems that operate physical workloads with the same security guarantees I apply to cloud infrastructure. Follow-up posts will cover specific implementations.*

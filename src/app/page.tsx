@@ -7,7 +7,7 @@ import { siteContent } from "@/content/site";
 import { Mail } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
 
-const FEATURED_SLUGS = ["warden", "covenant", "watershed"];
+const FEATURED_SLUGS = ["warden", "covenant", "watershed", "nomad-edge"];
 const PROPOSAL_SLUGS = ["aviation-tool-inventory"];
 
 export default function Home() {
@@ -66,7 +66,7 @@ export default function Home() {
               <SectionHeading>Security-First Infrastructure</SectionHeading>
             </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredProjects.map((project) => (
                 <ProjectCard key={project.slug} project={project} compact />
               ))}

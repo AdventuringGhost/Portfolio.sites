@@ -1463,26 +1463,27 @@ async function analyzeToolTrends(
       slug: "nomad-edge",
       title: "Nomad Edge — SCDC Edge Platform",
       tagline:
-        "Single Cluster, Distant Client (SCDC) architecture for resilient, rural-first operations using Nomad, Terraform, Packer, and Node.js.",
+        "SNS over Kinesis. Nomad over EKS. $8/month over $80. The cost architecture of rural edge computing — and why every tradeoff was the right call.",
       cardVariant: "primary",
       summaryBullets: [
-        "Production-grade Nomad Edge platform using Nomad, Terraform, Packer, and Node.js",
-        "Implements the Single Cluster, Distant Client (SCDC) model for rural and remote sites",
-        "Automates the full lifecycle from image bake to deployment and monitoring",
-        "Managed as a living project with Linear milestones, tickets, and post-incident reviews",
+        "SNS/SQS fan-out over Kinesis: ~$0.00/month vs $15 minimum for bursty rural telemetry",
+        "Nomad SCDC over EKS: single binary, partition-tolerant clients, under $10/month control plane",
+        "Packer-baked AMIs for reproducible, auditable edge node baseline from first boot",
+        "Deploy-Prove-Destroy lifecycle — full stack under $2 per portfolio session",
       ],
       stack: [
         "HashiCorp Nomad",
         "Terraform",
         "Packer",
+        "AWS SNS/SQS",
         "Node.js",
+        "WireGuard",
         "AWS",
-        "Linear",
       ],
       codeUrl: "https://github.com/AdventuringGhost/nomad-edge-factory",
       architectureImage: "/diagram/nomad-edge-arch.png",
       overview:
-        "Nomad Edge is a production-grade SCDC platform that takes workloads from Terraform module to Packer image to Nomad deployment, with telemetry and incident workflows managed in Linear.",
+        "Nomad Edge is a rural-first edge platform built under a strict cost discipline: every architectural decision had to be justified by operational need, not convention. SNS instead of Kinesis, Nomad instead of EKS, Packer AMIs instead of ephemeral containers — each choice is documented with the cost and complexity reasoning that drove it.",
       architecture: {
         description:
           "In the cloud (us-east-1), a three-node Nomad server cluster — The Brain — runs inside a hardened VPC. At the edge, Nomad clients — The Sentry nodes — run Node.js sensors in local zones or remote sites. A secure VPN/WireGuard bridge connects the two, so distant clients can keep working when the link is flaky and reconcile when it returns.",
@@ -1892,7 +1893,7 @@ module "edge_node" {
   },
   about: {
     content:
-      "I'm a Métis DevSecOps engineer building secure, AI-augmented infrastructure with a rural-first bias. My work covers Kubernetes runtime security (Falco, OPA Gatekeeper), policy-enforced AI access control, and AI-driven anomaly detection on edge telemetry — systems built to hold under connectivity loss and stay honest when AI is in the loop. I come from agricultural and remote communities, and I build with a bias toward calm, reliable systems over clever, fragile ones.",
+      "I'm a Métis DevSecOps engineer building secure, AI-augmented infrastructure with a rural-first bias. My work covers Kubernetes runtime security (Falco, OPA Gatekeeper), policy-enforced AI access control, and AI-driven anomaly detection on edge telemetry — systems built to hold under connectivity loss and stay honest when AI is in the loop. I come from agricultural and remote communities, and I build with a bias toward calm, reliable systems over clever, fragile ones. Based in Canada and fully available for remote-first roles globally.",
 
       profileImage: "/images/portfolio-photo.jpg",
     profileImageAlt: "A photo of the author, AdventuringGhost.",
