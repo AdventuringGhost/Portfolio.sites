@@ -500,7 +500,7 @@ export default async function ProjectPage({
 
                 <div className="grid md:grid-cols-2 gap-6">
                   {arcPeers.map((peer) => (
-                    <Link key={peer.slug} href={`/projects/${peer.slug}/`}>
+                    <a key={peer.slug} href={`/projects/${peer.slug}/`}>
                       <Card className="p-6 hover:shadow-md transition-shadow cursor-pointer h-full">
                         <p className="text-xs font-mono text-gray-400 tracking-[0.2em] uppercase mb-2">
                           Related project
@@ -515,16 +515,16 @@ export default async function ProjectPage({
                           ))}
                         </div>
                       </Card>
-                    </Link>
+                    </a>
                   ))}
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-center gap-4 mt-8">
                   {arcPeers.map((peer) => (
                     <Button key={peer.slug} asChild variant="secondary" className="w-full sm:w-auto">
-                      <Link href={`/projects/${peer.slug}/`}>
+                      <a href={`/projects/${peer.slug}/`}>
                         {peer.title.split(" —")[0]} →
-                      </Link>
+                      </a>
                     </Button>
                   ))}
                 </div>
