@@ -7,7 +7,7 @@ import { siteContent } from "@/content/site";
 import { Mail } from "lucide-react";
 import { ProjectCard } from "@/components/ProjectCard";
 
-const FEATURED_SLUGS = ["warden", "covenant", "watershed", "nomad-edge"];
+const FEATURED_SLUGS = ["margin-watch", "warden", "covenant", "watershed"];
 const PROPOSAL_SLUGS = ["aviation-tool-inventory"];
 
 export default function Home() {
